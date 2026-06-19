@@ -248,6 +248,40 @@ async function confirmPlayer(){
   const players = await getPlayers();
   const id = document.getElementById("playerSelect").value;
   me = players.find(p=>p.id===id);
+  const profile = await getProfile(me.id);
+  if(!profile.completed){
+    showProfileIntake(profile);
+  } else {
+    showPlayerHome();
+  }
+}
+
+// ---------- PLAYER-EIGEN MOLLICITATIE INVULLEN (eerste keer) ----------
+function showProfileIntake(existingProfile){
+  let html = `
+    <div class="card">
+      <h2>Welkom, ${esc(me.name)}!</h2>
+      <p>Voor je begint, vragen we je eerst dit korte vragenlijstje in te vullen &mdash; net als de mollicitatie. Je antwoorden worden vertrouwelijk gebruikt om straks de testvragen mee te maken. Niemand anders ziet jouw antwoorden, alleen de organisatie. Je mag een vraag leeg laten als je dat liever hebt.</p>
+    </div>
+    <div class="card">
+  `;
+  FIXED_QUESTIONS.forEach(fq=>{
+    html += `<label>${esc(fq.label)}</label><textarea id="intake_${fq.key}">${esc((existingProfile&&existingProfile[fq.key])||"")}</textarea>`;
+  });
+  html += `
+      <button class="full" style="margin-top:14px" onclick="submitProfileIntake()">Klaar, ga verder naar de testen</button>
+    </div>
+  `;
+  render(html);
+}
+async function submitProfileIntake(){
+  const data = {completed:true};
+  FIXED_QUESTIONS.forEach(fq=>{
+    const v = document.getElementById("intake_"+fq.key).value.trim();
+    if(v) data[fq.key] = v;
+  });
+  const ok = await saveProfile(me.id, data);
+  if(!ok){ alert("Opslaan is mislukt. Controleer je internetverbinding en probeer opnieuw."); return; }
   showPlayerHome();
 }
 
@@ -462,11 +496,17 @@ async function showAdminHome(){
 // -- players --
 async function showManagePlayers(){
   const players = await getPlayers();
-  const rows = players.map(p=>`
+  let rows = "";
+  for(const p of players){
+    const profile = await getProfile(p.id);
+    const status = profile.completed ? `<span class="pill">mollicitatie ingevuld</span>` : `<span class="small">nog niet ingevuld</span>`;
+    rows += `
     <div class="qlist-item flex-between">
-      <span>${esc(p.name)}</span>
+      <span>${esc(p.name)}<br>${status}</span>
       <button class="danger" onclick="removePlayer('${p.id}')">Verwijder</button>
-    </div>`).join("") || "<p class='small'>Nog geen spelers toegevoegd.</p>";
+    </div>`;
+  }
+  rows = rows || "<p class='small'>Nog geen spelers toegevoegd.</p>";
   render(`
     ${topbar("Spelers", "showAdminHome")}
     <div class="card">
@@ -528,7 +568,7 @@ async function loadProfileForm(){
 }
 async function saveProfileForm(){
   const playerId = document.getElementById("profilePlayerSelect").value;
-  const data = {};
+  const data = {completed:true};
   FIXED_QUESTIONS.forEach(fq=>{
     const v = document.getElementById("pf_"+fq.key).value.trim();
     if(v) data[fq.key] = v;
