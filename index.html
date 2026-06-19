@@ -175,6 +175,29 @@ async function getBank(){
 }
 async function getDay(n){ return (await sGet("days/"+n)) || {questionIds:[], dayQuestions:[], molId:null, open:false, votingOpen:false, closed:false}; }
 async function getAnswer(day, playerId){ return await sGet("answers/"+day+"/"+playerId); }
+async function getProfile(playerId){ return (await sGet("profiles/"+playerId)) || {}; }
+async function saveProfile(playerId, data){ return await sSet("profiles/"+playerId, data); }
+
+const FIXED_QUESTIONS = [
+  {key:"eten", label:"Favoriete eten", template:a=>`Wie houdt het meest van ${a}?`},
+  {key:"muziek", label:"Favoriete muziek / artiest", template:a=>`Wie luistert het meest naar ${a}?`},
+  {key:"film", label:"Favoriete film of serie", template:a=>`Van wie is dit de favoriete film of serie: ${a}?`},
+  {key:"huisdier", label:"Huisdieren", template:a=>`Wie heeft dit huisdier (of deze huisdieren): ${a}?`},
+  {key:"hobby", label:"Hobby / vrije tijd", template:a=>`Wie doet dit het liefst in zijn of haar vrije tijd: ${a}?`},
+  {key:"vak", label:"Lievelingsvak op school", template:a=>`Wiens lievelingsvak op school is ${a}?`},
+  {key:"vakantie", label:"Droomvakantiebestemming", template:a=>`Wie wil het allerliefst naartoe: ${a}?`},
+  {key:"bijnaam", label:"Bijnaam", template:a=>`Wiens bijnaam is dit: ${a}?`},
+  {key:"minstvak", label:"Minst favoriete vak", template:a=>`Wie heeft hier een hekel aan: ${a}?`},
+  {key:"genant", label:"Gênante situatie", template:a=>`Bij wie is dit ooit gebeurd: ${a}?`},
+  {key:"jeugd", label:"Jeugdherinnering", template:a=>`Van wie is dit een jeugdherinnering: ${a}?`},
+  {key:"superkracht", label:"Gekozen superkracht", template:a=>`Wie zou deze superkracht kiezen: ${a}?`},
+  {key:"goedin", label:"Iets waar je stiekem goed in bent", template:a=>`Wie is hier stiekem heel goed in: ${a}?`},
+  {key:"droom", label:"Grootste droom of ambitie", template:a=>`Wiens grote droom is dit: ${a}?`},
+  {key:"gewoonte", label:"Typische eigenaardigheid", template:a=>`Bij wie hoort deze gewoonte: ${a}?`},
+  {key:"bang", label:"Vroeger bang voor, nu niet meer", template:a=>`Wie was hier vroeger bang voor: ${a}?`},
+  {key:"trots", label:"Waar het meest trots op", template:a=>`Wie is hier het meest trots op: ${a}?`},
+  {key:"onzichtbaar", label:"Wat zou je doen als je 1 dag onzichtbaar was", template:a=>`Wie zou dit doen als hij of zij onzichtbaar was: ${a}?`}
+];
 
 function render(html){ document.getElementById("content").innerHTML = html; }
 
@@ -427,7 +450,9 @@ async function showAdminHome(){
     <div class="card">
       <h2>Beheer</h2>
       <button class="full" onclick="showManagePlayers()">Spelers beheren</button>
-      <button class="full" onclick="showManageBank()">Vragenbank (uit mollicitatie)</button>
+      <button class="full" onclick="showManageProfiles()">Mollicitatie-antwoorden invoeren</button>
+      <button class="full" onclick="showGenerateQuestion()">Vraag genereren uit antwoorden</button>
+      <button class="full" onclick="showManageBank()">Vragenbank (handmatig)</button>
       <button class="full" onclick="showManageDays()">Dagen instellen (Mol + vragen)</button>
       <button class="full" onclick="showAdminScoreboard()">Scorebord & uitslag</button>
     </div>
@@ -470,6 +495,129 @@ async function removePlayer(id){
   players = players.filter(p=>p.id!==id);
   await sSet("players", players);
   showManagePlayers();
+}
+
+// -- profiles --
+async function showManageProfiles(){
+  const players = await getPlayers();
+  if(players.length===0){
+    render(`${topbar("Mollicitatie-antwoorden", "showAdminHome")}<div class="card"><p class="small">Voeg eerst spelers toe.</p></div>`);
+    return;
+  }
+  const opts = players.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("");
+  render(`
+    ${topbar("Mollicitatie-antwoorden", "showAdminHome")}
+    <div class="card">
+      <p class="small">Tik hier per speler over de antwoorden uit hun ingevulde mollicitatieformulier. Laat een vraag leeg als de speler 'm niet heeft beantwoord. Op basis hiervan kun je straks automatisch "wie zei dit?"-vragen genereren.</p>
+      <label>Kies speler</label>
+      <select id="profilePlayerSelect" onchange="loadProfileForm()">${opts}</select>
+      <div id="profileForm" style="margin-top:14px"></div>
+    </div>
+  `);
+  loadProfileForm();
+}
+async function loadProfileForm(){
+  const playerId = document.getElementById("profilePlayerSelect").value;
+  const profile = await getProfile(playerId);
+  let html = "";
+  FIXED_QUESTIONS.forEach(fq=>{
+    html += `<label>${esc(fq.label)}</label><textarea id="pf_${fq.key}">${esc(profile[fq.key]||"")}</textarea>`;
+  });
+  html += `<button class="full" style="margin-top:10px" onclick="saveProfileForm()">Opslaan</button>`;
+  document.getElementById("profileForm").innerHTML = html;
+}
+async function saveProfileForm(){
+  const playerId = document.getElementById("profilePlayerSelect").value;
+  const data = {};
+  FIXED_QUESTIONS.forEach(fq=>{
+    const v = document.getElementById("pf_"+fq.key).value.trim();
+    if(v) data[fq.key] = v;
+  });
+  const ok = await saveProfile(playerId, data);
+  if(!ok){ alert("Opslaan is mislukt, controleer de databasekoppeling."); return; }
+  alert("Antwoorden opgeslagen.");
+}
+
+// -- question generator --
+async function showGenerateQuestion(){
+  const players = await getPlayers();
+  if(players.length < 4){
+    render(`${topbar("Vraag genereren", "showAdminHome")}<div class="card"><p class="small">Je hebt minstens 4 spelers nodig om hieruit te kunnen kiezen.</p></div>`);
+    return;
+  }
+  const templateOpts = FIXED_QUESTIONS.map(fq=>`<option value="${fq.key}">${esc(fq.label)}</option>`).join("");
+  render(`
+    ${topbar("Vraag genereren uit antwoorden", "showAdminHome")}
+    <div class="card">
+      <label>Onderwerp</label>
+      <select id="gen_template" onchange="loadGenCorrectOptions()">${templateOpts}</select>
+      <div id="genBody" style="margin-top:14px"></div>
+    </div>
+  `);
+  loadGenCorrectOptions();
+}
+async function loadGenCorrectOptions(){
+  const key = document.getElementById("gen_template").value;
+  const players = await getPlayers();
+  let rows = [];
+  for(const p of players){
+    const profile = await getProfile(p.id);
+    if(profile[key]) rows.push({id:p.id, name:p.name, answer:profile[key]});
+  }
+  if(rows.length===0){
+    document.getElementById("genBody").innerHTML = `<p class="small">Niemand heeft hier nog een antwoord voor ingevoerd. Ga naar "Mollicitatie-antwoorden invoeren".</p>`;
+    return;
+  }
+  const opts = rows.map(r=>`<option value="${r.id}">${esc(r.name)} &mdash; "${esc(r.answer)}"</option>`).join("");
+  document.getElementById("genBody").innerHTML = `
+    <label>Wie is het juiste antwoord?</label>
+    <select id="gen_correct">${opts}</select>
+    <button style="margin-top:8px" onclick="loadGenPreview()">Volgende</button>
+    <div id="genPreview"></div>
+  `;
+}
+async function loadGenPreview(){
+  const key = document.getElementById("gen_template").value;
+  const correctId = document.getElementById("gen_correct").value;
+  const fq = FIXED_QUESTIONS.find(f=>f.key===key);
+  const players = await getPlayers();
+  const profile = await getProfile(correctId);
+  const answerText = profile[key];
+  const others = players.filter(p=>p.id!==correctId);
+  const checks = others.map(p=>`
+    <label style="font-weight:normal;display:block;margin:4px 0;">
+      <input type="checkbox" class="genDistractor" value="${p.id}"> ${esc(p.name)}
+    </label>`).join("");
+  document.getElementById("genPreview").innerHTML = `
+    <p style="margin-top:12px"><strong>Voorbeeldtekst:</strong></p>
+    <textarea id="gen_text">${esc(fq.template(answerText))}</textarea>
+    <p class="small">Kies precies 3 andere spelers als foute opties (of klik op "willekeurig 3"):</p>
+    <button class="secondary" onclick="pickRandomDistractors()">Willekeurig 3 kiezen</button>
+    ${checks}
+    <button class="full" style="margin-top:10px" onclick="saveGeneratedQuestion('${correctId}')">Vraag opslaan in vragenbank</button>
+  `;
+}
+function pickRandomDistractors(){
+  const boxes = Array.from(document.querySelectorAll(".genDistractor"));
+  boxes.forEach(b=>b.checked=false);
+  const shuffled = boxes.sort(()=>Math.random()-0.5);
+  shuffled.slice(0,3).forEach(b=>b.checked=true);
+}
+async function saveGeneratedQuestion(correctId){
+  const checked = Array.from(document.querySelectorAll(".genDistractor:checked")).map(el=>el.value);
+  if(checked.length !== 3){ alert("Kies precies 3 andere spelers als foute opties."); return; }
+  const text = document.getElementById("gen_text").value.trim();
+  if(!text){ alert("De vraagtekst mag niet leeg zijn."); return; }
+  const players = await getPlayers();
+  const idsShuffled = [correctId, ...checked].sort(()=>Math.random()-0.5);
+  const options = idsShuffled.map(id=>players.find(p=>p.id===id).name);
+  const correctIndex = idsShuffled.indexOf(correctId);
+  const bank = await getBank();
+  bank.push({id: uid()+"q", text, options, correctIndex});
+  const ok = await sSet("bank", bank);
+  if(!ok){ alert("Opslaan is mislukt, controleer de databasekoppeling."); return; }
+  alert("Vraag toegevoegd aan de vragenbank!");
+  showManageBank();
 }
 
 // -- bank --
