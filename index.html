@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>De Mol van het Vikingkamp</title>
+<style>
+  :root{
+    --wood-dark:#2b1d12;
+    --wood:#4a2f1c;
+    --wood-light:#6b4226;
+    --parchment:#f3e6c8;
+    --parchment-dark:#e3d2a3;
+    --gold:#c9962c;
+    --gold-light:#e8b94d;
+    --red:#8a2c20;
+    --green:#3a5a30;
+    --ink:#2a1f14;
+    --shadow:rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Trebuchet MS', Verdana, sans-serif;
+    background: radial-gradient(circle at 50% 0%, #3c2a1a, #1c130b 70%);
+    color:var(--ink);
+    min-height:100vh;
+  }
+  #app{max-width:520px;margin:0 auto;padding:16px 16px 60px;}
+  .card{
+    background:var(--parchment);
+    border:3px solid var(--wood);
+    border-radius:10px;
+    padding:18px;
+    margin-bottom:16px;
+    box-shadow:0 6px 16px var(--shadow);
+    position:relative;
+  }
+  .card::before{
+    content:"";
+    position:absolute;inset:6px;
+    border:1px solid var(--gold);
+    border-radius:6px;
+    pointer-events:none;
+    opacity:.5;
+  }
+  h1{
+    font-family:'Georgia', serif;
+    text-align:center;
+    color:var(--gold-light);
+    letter-spacing:2px;
+    font-size:26px;
+    margin:18px 0 4px;
+    text-shadow:0 2px 4px #000;
+  }
+  h1 .rune{color:var(--gold);}
+  .subtitle{
+    text-align:center;color:var(--parchment-dark);font-size:13px;margin-bottom:18px;letter-spacing:1px;
+  }
+  h2{font-family:Georgia, serif;color:var(--wood-dark);border-bottom:2px solid var(--gold);padding-bottom:6px;margin-top:0;}
+  h3{color:var(--wood);margin-bottom:6px;}
+  p{line-height:1.5;}
+  label{display:block;font-weight:bold;margin:10px 0 4px;color:var(--wood-dark);font-size:14px;}
+  input[type=text], input[type=number], input[type=password], select, textarea{
+    width:100%;padding:9px 10px;border:2px solid var(--wood-light);border-radius:6px;
+    background:#fffdf6;font-size:15px;font-family:inherit;
+  }
+  textarea{resize:vertical;min-height:50px;}
+  button{
+    background:linear-gradient(180deg,var(--gold-light),var(--gold));
+    border:2px solid var(--wood-dark);
+    color:var(--wood-dark);
+    font-weight:bold;
+    padding:10px 16px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:15px;
+    margin:6px 6px 6px 0;
+    font-family:inherit;
+    box-shadow:0 3px 0 var(--wood-dark);
+    transition:transform .05s;
+  }
+  button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--wood-dark);}
+  button.secondary{background:#cfc4a4;}
+  button.danger{background:linear-gradient(180deg,#c97050,var(--red));color:#fff8ec;}
+  button.full{width:100%;display:block;}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .pill{
+    display:inline-block;background:var(--wood);color:var(--parchment);
+    padding:3px 10px;border-radius:14px;font-size:12px;margin:2px;
+  }
+  .option-btn{
+    display:block;width:100%;text-align:left;padding:12px 14px;margin:8px 0;
+    background:#fffdf6;border:2px solid var(--wood-light);border-radius:8px;
+    cursor:pointer;font-size:15px;color:var(--ink);box-shadow:none;
+  }
+  .option-btn:hover{background:#fff3d6;}
+  .option-btn.selected{background:var(--gold-light);border-color:var(--wood-dark);}
+  .option-btn.correct{background:#bfe0ab;border-color:var(--green);}
+  .option-btn.wrong{background:#e8b3a6;border-color:var(--red);}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .topbar button{margin:0;padding:6px 10px;font-size:13px;}
+  .progress-wrap{background:#d8c9a0;border-radius:8px;overflow:hidden;height:10px;margin:10px 0;border:1px solid var(--wood);}
+  .progress-bar{background:var(--green);height:100%;transition:width .2s;}
+  .timer{font-weight:bold;color:var(--red);font-size:13px;}
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  th,td{padding:6px 8px;text-align:left;border-bottom:1px solid var(--wood-light);}
+  th{color:var(--wood-dark);}
+  .rank-1{color:var(--gold);font-weight:bold;}
+  .small{font-size:12px;color:var(--wood);}
+  .qlist-item{border:1px solid var(--wood-light);border-radius:6px;padding:8px;margin-bottom:6px;background:#fffdf6;}
+  .flex-between{display:flex;justify-content:space-between;align-items:center;}
+  .tag-mol{background:var(--red);color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;}
+  .center{text-align:center;}
+  .hidden{display:none;}
+  .loading{text-align:center;color:var(--parchment-dark);padding:40px;}
+  .axe-divider{text-align:center;color:var(--gold);margin:10px 0;letter-spacing:8px;}
+</style>
+</head>
+<body>
+<div id="app">
+  <h1><span class="rune">ᛗ</span> De Mol van het Vikingkamp <span class="rune">ᛗ</span></h1>
+  <div class="subtitle">— wie verraadt het Viking volk? —</div>
+  <div id="content"><div class="loading">Het noodlot wordt geraadpleegd...</div></div>
+</div>
+<script>
+const PIN = "1066";
+const POINTS_PER_Q = 10;
+const DAYS = [1,2,3,4,5,6];
+let me = null; // {id,name} currently selected player (local only, resets on reload)
+let isAdmin = false;
+let quizState = null; // active quiz run state
+
+// ---------- FIREBASE CONFIG ----------
+// Vul hieronder de Realtime Database URL van je eigen (gratis) Firebase project in.
+// Zie de instructies die je erbij hebt gekregen om dit project in 5 minuten aan te maken.
+let FIREBASE_URL = localStorage.getItem("mol_firebase_url") || "";
+
+async function sGet(path){
+  if(!FIREBASE_URL) return null;
+  try{
+    const r = await fetch(FIREBASE_URL.replace(/\/$/,"") + "/" + path + ".json");
+    if(!r.ok) return null;
+    const data = await r.json();
+    return data === null ? null : data;
+  } catch(e){ console.error("firebase get failed", path, e); return null; }
+}
+async function sSet(path, val){
+  if(!FIREBASE_URL){ console.error("Geen database-URL ingesteld."); return false; }
+  try{
+    const r = await fetch(FIREBASE_URL.replace(/\/$/,"") + "/" + path + ".json", {
+      method: "PUT",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(val)
+    });
+    if(!r.ok){
+      const t = await r.text().catch(()=> "");
+      console.error("firebase set niet ok", path, r.status, t);
+    }
+    return r.ok;
+  } catch(e){ console.error("firebase set failed", path, e); return false; }
+}
+function uid(){ return "p" + Math.random().toString(36).slice(2,9); }
+function esc(s){ return (s||"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+async function getPlayers(){
+  const d = await sGet("players");
+  if(!d) return [];
+  return Array.isArray(d) ? d.filter(Boolean) : Object.values(d);
+}
+async function getBank(){
+  const d = await sGet("bank");
+  if(!d) return [];
+  return Array.isArray(d) ? d.filter(Boolean) : Object.values(d);
+}
+async function getDay(n){ return (await sGet("days/"+n)) || {questionIds:[], dayQuestions:[], molId:null, open:false, votingOpen:false, closed:false}; }
+async function getAnswer(day, playerId){ return await sGet("answers/"+day+"/"+playerId); }
+
+function render(html){ document.getElementById("content").innerHTML = html; }
+
+function topbar(title, backFn){
+  return `<div class="topbar">
+    <button class="secondary" onclick="(${backFn})()">&larr; Terug</button>
+    <strong style="color:var(--wood-dark)">${esc(title)}</strong>
+    <span></span>
+  </div>`;
+}
+
+// ---------- START ----------
+async function showStart(){
+  isAdmin = false; me = null;
+  render(`
+    <div class="card center">
+      <h2>Welkom, Viking</h2>
+      <p>Ben je een dappere strijder die de test gaat doen, of de wijze stamhoofdster/stamhoofd die alles regelt?</p>
+      <button class="full" onclick="showPlayerLogin()">Ik ben speler</button>
+      <button class="full secondary" onclick="showAdminLogin()">Ik ben organisator</button>
+    </div>
+    <p class="center small" style="color:var(--parchment-dark)"><a href="#" onclick="showSetup();return false;" style="color:var(--gold-light)">database-koppeling wijzigen</a></p>
+  `);
+}
+
+// ---------- PLAYER LOGIN ----------
+async function showPlayerLogin(){
+  const players = await getPlayers();
+  if(players.length===0){
+    render(`<div class="card center">
+      <p>Er zijn nog geen spelers toegevoegd door de organisatie. Vraag de organisator om dit eerst te doen.</p>
+      <button onclick="showStart()">&larr; Terug</button>
+    </div>`);
+    return;
+  }
+  const opts = players.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("");
+  render(`
+    <div class="card">
+      <h2>Wie ben jij?</h2>
+      <label>Kies jouw naam</label>
+      <select id="playerSelect">${opts}</select>
+      <button class="full" style="margin-top:14px" onclick="confirmPlayer()">Verder</button>
+      <button class="secondary" onclick="showStart()">&larr; Terug</button>
+    </div>
+  `);
+}
+async function confirmPlayer(){
+  const players = await getPlayers();
+  const id = document.getElementById("playerSelect").value;
+  me = players.find(p=>p.id===id);
+  showPlayerHome();
+}
+
+async function showPlayerHome(){
+  let rows = "";
+  for(const d of DAYS){
+    const day = await getDay(d);
+    const ans = await getAnswer(d, me.id);
+    let status, action;
+    if(!day.open){
+      status = `<span class="small">nog niet geopend</span>`;
+      action = `<button disabled class="secondary">Gesloten</button>`;
+    } else if(ans && ans.submitted){
+      status = `<span class="small">ingeleverd ✓ &mdash; ${ans.score} punten</span>`;
+      action = `<button class="secondary" disabled>Gedaan</button>`;
+    } else {
+      status = `<span class="small">klaar om te spelen!</span>`;
+      action = `<button onclick="startQuiz(${d})">Start test</button>`;
+    }
+    rows += `<div class="qlist-item flex-between"><div><strong>Dag ${d}</strong><br>${status}</div>${action}</div>`;
+  }
+  render(`
+    ${topbar("Speler: "+me.name, "showStart")}
+    <div class="card">
+      <h2>Dagtesten</h2>
+      ${rows}
+    </div>
+    <div class="card">
+      <h2>Scorebord</h2>
+      <div id="scoreboardHolder">laden...</div>
+    </div>
+  `);
+  renderScoreboard("scoreboardHolder");
+}
+
+// ---------- QUIZ FLOW ----------
+async function startQuiz(dayNum){
+  const day = await getDay(dayNum);
+  const bank = await getBank();
+  const players = await getPlayers();
+  const bankQs = day.questionIds.map(id=>bank.find(b=>b.id===id)).filter(Boolean);
+  const dayQs = (day.dayQuestions||[]);
+  const allQs = [...bankQs, ...dayQs].map(q=>({...q}));
+  quizState = {
+    dayNum, questions: allQs, idx: 0, answers: new Array(allQs.length).fill(null),
+    qStart: Date.now(), totalStart: Date.now(), times: new Array(allQs.length).fill(0),
+    molGuess: null, players
+  };
+  renderQuizQuestion();
+}
+
+function renderQuizQuestion(){
+  const qs = quizState;
+  if(qs.idx >= qs.questions.length){
+    renderMolGuess();
+    return;
+  }
+  const q = qs.questions[qs.idx];
+  const pct = Math.round((qs.idx/(qs.questions.length+1))*100);
+  const opts = q.options.map((o,i)=>`<button class="option-btn" onclick="answerQuestion(${i})">${esc(o)}</button>`).join("");
+  render(`
+    <div class="card">
+      <div class="small">Vraag ${qs.idx+1} van ${qs.questions.length}</div>
+      <div class="progress-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>
+      <h3>${esc(q.text)}</h3>
+      ${opts}
+    </div>
+  `);
+  qs.qStart = Date.now();
+}
+function answerQuestion(i){
+  const qs = quizState;
+  qs.answers[qs.idx] = i;
+  qs.times[qs.idx] = Date.now() - qs.qStart;
+  qs.idx++;
+  renderQuizQuestion();
+}
+
+async function renderMolGuess(){
+  const qs = quizState;
+  const others = qs.players.filter(p=>p.id!==me.id);
+  const opts = others.map(p=>`<button class="option-btn" onclick="answerMolGuess('${p.id}')">${esc(p.name)}</button>`).join("");
+  render(`
+    <div class="card">
+      <h3>Laatste vraag, helemaal geheim...</h3>
+      <p>Wie denk jij dat <strong>vandaag</strong> de Mol is?</p>
+      ${opts}
+    </div>
+  `);
+}
+async function answerMolGuess(playerId){
+  quizState.molGuess = playerId;
+  await finishQuiz();
+}
+
+async function finishQuiz(){
+  const qs = quizState;
+  const day = await getDay(qs.dayNum);
+  const bank = await getBank();
+  const bankQs = day.questionIds.map(id=>bank.find(b=>b.id===id)).filter(Boolean);
+  const dayQs = (day.dayQuestions||[]);
+  const allQs = [...bankQs, ...dayQs];
+  let correct = 0;
+  qs.answers.forEach((a,i)=>{ if(allQs[i] && a===allQs[i].correctIndex) correct++; });
+  const score = correct * POINTS_PER_Q;
+  const totalTimeMs = Date.now() - qs.totalStart;
+  const record = {
+    answers: qs.answers, times: qs.times, totalTimeMs,
+    correct, score, molGuess: qs.molGuess, submitted: true, submittedAt: Date.now()
+  };
+  await sSet("answers/"+qs.dayNum+"/"+me.id, record);
+  render(`
+    <div class="card center">
+      <h2>Test ingeleverd!</h2>
+      <p>Je had <strong>${correct}</strong> van de ${allQs.length} vragen goed.</p>
+      <p style="font-size:22px;color:var(--gold)"><strong>${score} punten</strong></p>
+      <p class="small">Tijd: ${(totalTimeMs/1000).toFixed(1)} sec (telt mee bij gelijke stand)</p>
+      <button class="full" onclick="showPlayerHome()">Terug naar overzicht</button>
+    </div>
+  `);
+}
+
+// ---------- SCOREBOARD ----------
+async function computeScoreboard(){
+  const players = await getPlayers();
+  const totals = {};
+  players.forEach(p=>totals[p.id]={name:p.name, points:0, time:0, molDays:[]});
+  for(const d of DAYS){
+    const day = await getDay(d);
+    const maxForDay = (day.questionIds.length + ((day.dayQuestions||[]).length)) * POINTS_PER_Q;
+
+    // eerst ieders eigen quizscore voor deze dag
+    const dayScores = {};
+    for(const p of players){
+      const ans = await getAnswer(d, p.id);
+      dayScores[p.id] = (ans && ans.submitted) ? {score: ans.score, time: ans.totalTimeMs} : {score:0, time:0};
+    }
+
+    // Mol-bonus erbij, maar gecapt op het maximaal haalbare van die dag
+    if(day.molId && day.closed && dayScores[day.molId]){
+      let wrongGuessers = 0, totalGuessers = 0;
+      for(const p of players){
+        if(p.id===day.molId) continue;
+        const ans = await getAnswer(d, p.id);
+        if(ans && ans.submitted && ans.molGuess){
+          totalGuessers++;
+          if(ans.molGuess !== day.molId) wrongGuessers++;
+        }
+      }
+      const bonus = wrongGuessers * POINTS_PER_Q;
+      const uncapped = dayScores[day.molId].score + bonus;
+      const capped = maxForDay>0 ? Math.min(uncapped, maxForDay) : uncapped;
+      totals[day.molId].molDays.push({day:d, bonus, wrongGuessers, totalGuessers, capped: uncapped>capped});
+      dayScores[day.molId].score = capped;
+    }
+
+    for(const p of players){
+      totals[p.id].points += dayScores[p.id].score;
+      totals[p.id].time += dayScores[p.id].time;
+    }
+  }
+  return Object.values(totals).sort((a,b)=> b.points - a.points || a.time - b.time);
+}
+async function renderScoreboard(targetId){
+  const ranking = await computeScoreboard();
+  const rows = ranking.map((r,i)=>`
+    <tr class="${i===0?'rank-1':''}">
+      <td>${i+1}</td><td>${esc(r.name)}</td><td>${r.points}</td>
+      <td class="small">${(r.time/1000).toFixed(1)}s</td>
+    </tr>`).join("");
+  document.getElementById(targetId).innerHTML = `
+    <table>
+      <tr><th>#</th><th>Speler</th><th>Punten</th><th>Tijd</th></tr>
+      ${rows}
+    </table>
+  `;
+}
+
+// ---------- ADMIN ----------
+async function showAdminLogin(){
+  render(`
+    <div class="card center">
+      <h2>Organisator</h2>
+      <label>Voer de geheime PIN in</label>
+      <input type="password" id="pinInput" placeholder="PIN">
+      <button class="full" style="margin-top:14px" onclick="checkPin()">Inloggen</button>
+      <button class="secondary" onclick="showStart()">&larr; Terug</button>
+    </div>
+  `);
+}
+function checkPin(){
+  const v = document.getElementById("pinInput").value;
+  if(v===PIN){ isAdmin=true; showAdminHome(); }
+  else { alert("Onjuiste PIN."); }
+}
+
+async function showAdminHome(){
+  render(`
+    ${topbar("Organisator", "showStart")}
+    <div class="card">
+      <h2>Beheer</h2>
+      <button class="full" onclick="showManagePlayers()">Spelers beheren</button>
+      <button class="full" onclick="showManageBank()">Vragenbank (uit mollicitatie)</button>
+      <button class="full" onclick="showManageDays()">Dagen instellen (Mol + vragen)</button>
+      <button class="full" onclick="showAdminScoreboard()">Scorebord & uitslag</button>
+    </div>
+  `);
+}
+
+// -- players --
+async function showManagePlayers(){
+  const players = await getPlayers();
+  const rows = players.map(p=>`
+    <div class="qlist-item flex-between">
+      <span>${esc(p.name)}</span>
+      <button class="danger" onclick="removePlayer('${p.id}')">Verwijder</button>
+    </div>`).join("") || "<p class='small'>Nog geen spelers toegevoegd.</p>";
+  render(`
+    ${topbar("Spelers", "showAdminHome")}
+    <div class="card">
+      <h2>Spelers (${players.length})</h2>
+      ${rows}
+      <label>Nieuwe speler</label>
+      <div class="row">
+        <input type="text" id="newPlayerName" placeholder="Naam" style="flex:1">
+        <button onclick="addPlayer()">Toevoegen</button>
+      </div>
+    </div>
+  `);
+}
+async function addPlayer(){
+  const name = document.getElementById("newPlayerName").value.trim();
+  if(!name) return;
+  const players = await getPlayers();
+  players.push({id: uid(), name});
+  const ok = await sSet("players", players);
+  if(!ok){ alert("Opslaan is mislukt. Controleer of de databasekoppeling klopt en of de Firebase-regels lezen/schrijven toestaan (zie 'database-koppeling wijzigen' en de Rules-tab in Firebase)."); return; }
+  showManagePlayers();
+}
+async function removePlayer(id){
+  if(!confirm("Deze speler verwijderen?")) return;
+  let players = await getPlayers();
+  players = players.filter(p=>p.id!==id);
+  await sSet("players", players);
+  showManagePlayers();
+}
+
+// -- bank --
+async function showManageBank(){
+  const bank = await getBank();
+  const rows = bank.map(q=>`
+    <div class="qlist-item">
+      <div class="flex-between"><strong>${esc(q.text)}</strong>
+        <button class="danger" onclick="removeBankQ('${q.id}')">Verwijder</button>
+      </div>
+      <div class="small">Opties: ${q.options.map((o,i)=> (i===q.correctIndex? "<b>"+esc(o)+"</b>" : esc(o))).join(" | ")}</div>
+    </div>`).join("") || "<p class='small'>Nog geen vragen in de bank.</p>";
+  render(`
+    ${topbar("Vragenbank", "showAdminHome")}
+    <div class="card">
+      <p class="small">Tip: maak vragen op basis van het mollicitatieformulier, bijv. "Wie houdt van pizza?" met de namen van spelers als opties.</p>
+      <h2>Vragen (${bank.length})</h2>
+      ${rows}
+    </div>
+    <div class="card">
+      <h2>Nieuwe vraag</h2>
+      <label>Vraagtekst</label>
+      <textarea id="bq_text" placeholder="Bijv. Wie heeft een hekel aan wiskunde?"></textarea>
+      <label>Optie 1 (goed antwoord hieronder aanvinken)</label>
+      <div class="row"><input type="radio" name="bq_correct" value="0" checked><input type="text" id="bq_opt0" placeholder="Optie 1" style="flex:1"></div>
+      <div class="row"><input type="radio" name="bq_correct" value="1"><input type="text" id="bq_opt1" placeholder="Optie 2" style="flex:1"></div>
+      <div class="row"><input type="radio" name="bq_correct" value="2"><input type="text" id="bq_opt2" placeholder="Optie 3" style="flex:1"></div>
+      <div class="row"><input type="radio" name="bq_correct" value="3"><input type="text" id="bq_opt3" placeholder="Optie 4" style="flex:1"></div>
+      <button class="full" style="margin-top:10px" onclick="addBankQ()">Vraag toevoegen</button>
+    </div>
+  `);
+}
+async function addBankQ(){
+  const text = document.getElementById("bq_text").value.trim();
+  const opts = [0,1,2,3].map(i=>document.getElementById("bq_opt"+i).value.trim());
+  if(!text || opts.some(o=>!o)){ alert("Vul de vraag en alle 4 opties in."); return; }
+  const correctIndex = parseInt(document.querySelector('input[name="bq_correct"]:checked').value);
+  const bank = await getBank();
+  bank.push({id: uid(), text, options: opts, correctIndex});
+  await sSet("bank", bank);
+  showManageBank();
+}
+async function removeBankQ(id){
+  let bank = await getBank();
+  bank = bank.filter(q=>q.id!==id);
+  await sSet("bank", bank);
+  showManageBank();
+}
+
+// -- days --
+async function showManageDays(){
+  let btns = DAYS.map(d=>`<button onclick="showManageDay(${d})">Dag ${d}</button>`).join("");
+  render(`
+    ${topbar("Dagen", "showAdminHome")}
+    <div class="card">
+      <h2>Kies een dag om in te stellen</h2>
+      ${btns}
+    </div>
+  `);
+}
+
+async function showManageDay(d){
+  const day = await getDay(d);
+  const players = await getPlayers();
+  const bank = await getBank();
+
+  const playerOpts = players.map(p=>`<option value="${p.id}" ${day.molId===p.id?"selected":""}>${esc(p.name)}</option>`).join("");
+
+  const bankChecks = bank.map(q=>`
+    <label style="font-weight:normal;display:flex;gap:8px;align-items:flex-start;">
+      <input type="checkbox" class="bankPick" value="${q.id}" ${day.questionIds.includes(q.id)?"checked":""} style="margin-top:4px">
+      <span>${esc(q.text)}</span>
+    </label>`).join("");
+
+  const dq = day.dayQuestions && day.dayQuestions.length ? day.dayQuestions : [];
+  let dayQHtml = "";
+  for(let i=0;i<8;i++){
+    const q = dq[i] || {text:"", options:["","","",""], correctIndex:0};
+    dayQHtml += `
+      <div class="qlist-item">
+        <label>Dagvraag ${i+1}</label>
+        <input type="text" id="dq_text_${i}" value="${esc(q.text)}" placeholder="Vraagtekst over het spel van vandaag">
+        ${[0,1,2,3].map(j=>`
+          <div class="row" style="margin-top:4px">
+            <input type="radio" name="dq_correct_${i}" value="${j}" ${q.correctIndex===j?"checked":""}>
+            <input type="text" id="dq_opt_${i}_${j}" value="${esc(q.options[j]||'')}" placeholder="Optie ${j+1}" style="flex:1">
+          </div>`).join("")}
+      </div>`;
+  }
+
+  render(`
+    ${topbar("Dag "+d, "showManageDays")}
+    <div class="card">
+      <h2>Status</h2>
+      <p class="small">${day.open ? (day.closed ? "Gesloten / afgerond" : "Geopend voor spelers") : "Nog niet geopend"}</p>
+      <div class="row">
+        <button onclick="setDayOpen(${d}, true)">Open test voor spelers</button>
+        <button class="secondary" onclick="setDayOpen(${d}, false)">Sluit test (geen nieuwe pogingen)</button>
+        <button class="danger" onclick="closeDayScoring(${d})">Bevestig Mol-uitslag van deze dag</button>
+      </div>
+      <p class="small">"Bevestig Mol-uitslag" tel je pas in als alle 15 hun gok hebben gedaan &mdash; pas daarna telt de Mol-bonus mee in het scorebord.</p>
+    </div>
+    <div class="card">
+      <h2>Wie is de Mol op dag ${d}?</h2>
+      <p class="small">Geheim! Dit zie alleen jij als organisator.</p>
+      <select id="molSelect">${playerOpts || '<option value="">Geen spelers</option>'}</select>
+      <button style="margin-top:8px" onclick="saveMol(${d})">Mol opslaan</button>
+    </div>
+    <div class="card">
+      <h2>Vragen uit de bank (kies 12)</h2>
+      <p class="small">Geselecteerd: <span id="bankCount">${day.questionIds.length}</span> / 12 aanbevolen</p>
+      <div id="bankPicker">${bankChecks || "<p class='small'>Voeg eerst vragen toe aan de bank.</p>"}</div>
+      <button style="margin-top:10px" onclick="saveBankPicks(${d})">Selectie opslaan</button>
+    </div>
+    <div class="card">
+      <h2>8 dagvragen (over de spellen van vandaag)</h2>
+      ${dayQHtml}
+      <button class="full" style="margin-top:10px" onclick="saveDayQuestions(${d})">Dagvragen opslaan</button>
+    </div>
+  `);
+}
+
+async function setDayOpen(d, openVal){
+  const day = await getDay(d);
+  day.open = openVal;
+  await sSet("days/"+d, day);
+  showManageDay(d);
+}
+async function closeDayScoring(d){
+  if(!confirm("Mol-uitslag van dag "+d+" definitief bevestigen? Doe dit pas als iedereen heeft gespeeld.")) return;
+  const day = await getDay(d);
+  day.closed = true;
+  await sSet("days/"+d, day);
+  showManageDay(d);
+}
+async function saveMol(d){
+  const day = await getDay(d);
+  day.molId = document.getElementById("molSelect").value;
+  await sSet("days/"+d, day);
+  alert("Mol voor dag "+d+" opgeslagen.");
+}
+async function saveBankPicks(d){
+  const ids = Array.from(document.querySelectorAll(".bankPick:checked")).map(el=>el.value);
+  const day = await getDay(d);
+  day.questionIds = ids;
+  await sSet("days/"+d, day);
+  alert("Geselecteerd: "+ids.length+" vragen opgeslagen.");
+}
+async function saveDayQuestions(d){
+  const day = await getDay(d);
+  const qs = [];
+  for(let i=0;i<8;i++){
+    const text = document.getElementById("dq_text_"+i).value.trim();
+    const opts = [0,1,2,3].map(j=>document.getElementById("dq_opt_"+i+"_"+j).value.trim());
+    const correctRadio = document.querySelector('input[name="dq_correct_'+i+'"]:checked');
+    if(text && opts.every(o=>o)){
+      qs.push({text, options: opts, correctIndex: parseInt(correctRadio.value)});
+    }
+  }
+  day.dayQuestions = qs;
+  await sSet("days/"+d, day);
+  alert("Dagvragen opgeslagen ("+qs.length+" van 8 ingevuld).");
+}
+
+async function showAdminScoreboard(){
+  render(`
+    ${topbar("Scorebord", "showAdminHome")}
+    <div class="card">
+      <h2>Totaalstand</h2>
+      <div id="scoreboardHolder2">laden...</div>
+    </div>
+    <div class="card">
+      <h3>Mol-bonus per dag</h3>
+      <div id="molInfoHolder">laden...</div>
+    </div>
+  `);
+  renderScoreboard("scoreboardHolder2");
+  renderMolInfo("molInfoHolder");
+}
+async function renderMolInfo(targetId){
+  const ranking = await computeScoreboard();
+  let html = "";
+  for(const r of ranking){
+    if(r.molDays.length){
+      for(const md of r.molDays){
+        html += `<div class="qlist-item">
+          <strong>${esc(r.name)}</strong> was de Mol op dag ${md.day}.<br>
+          <span class="small">${md.wrongGuessers} van ${md.totalGuessers} spelers die gokten, hadden het mis &rarr; bonus ${md.bonus} punten${md.capped ? " (afgetopt op het maximum van die dag)" : ""}.</span>
+        </div>`;
+      }
+    }
+  }
+  document.getElementById(targetId).innerHTML = html || "<p class='small'>Nog geen dagen afgerond.</p>";
+}
+
+// ---------- HOSTING SETUP ----------
+function showSetup(){
+  render(`
+    <div class="card">
+      <h2>Eenmalige koppeling</h2>
+      <p>Deze app slaat alle gegevens op in jullie eigen gratis Firebase-database, zodat het op alle telefoons werkt. Plak hieronder de Database URL (zie de instructies).</p>
+      <label>Firebase Realtime Database URL</label>
+      <input type="text" id="fbUrl" placeholder="https://jouw-project-default-rtdb.europe-west1.firebasedatabase.app">
+      <button class="full" style="margin-top:14px" onclick="saveSetup()">Opslaan en starten</button>
+    </div>
+  `);
+}
+function saveSetup(){
+  const v = document.getElementById("fbUrl").value.trim();
+  if(!v.startsWith("https://")){ alert("Dat lijkt geen geldige URL. Kopieer de Database URL uit de Firebase console."); return; }
+  FIREBASE_URL = v;
+  localStorage.setItem("mol_firebase_url", v);
+  showStart();
+}
+
+if(!FIREBASE_URL){ showSetup(); } else { showStart(); }
+</script>
+</body>
+</html>
