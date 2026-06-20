@@ -5,116 +5,121 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>De Mol van het Vikingkamp</title>
 <style>
-  :root{
-    --wood-dark:#2b1d12;
-    --wood:#4a2f1c;
-    --wood-light:#6b4226;
-    --parchment:#f3e6c8;
-    --parchment-dark:#e3d2a3;
-    --gold:#c9962c;
-    --gold-light:#e8b94d;
-    --red:#8a2c20;
-    --green:#3a5a30;
-    --ink:#2a1f14;
-    --shadow:rgba(0,0,0,.35);
-  }
-  *{box-sizing:border-box;}
-  body{
-    margin:0;
-    font-family:'Trebuchet MS', Verdana, sans-serif;
-    background: radial-gradient(circle at 50% 0%, #3c2a1a, #1c130b 70%);
-    color:var(--ink);
-    min-height:100vh;
-  }
-  #app{max-width:520px;margin:0 auto;padding:16px 16px 60px;}
-  .card{
-    background:var(--parchment);
-    border:3px solid var(--wood);
-    border-radius:10px;
-    padding:18px;
-    margin-bottom:16px;
-    box-shadow:0 6px 16px var(--shadow);
-    position:relative;
-  }
-  .card::before{
-    content:"";
-    position:absolute;inset:6px;
-    border:1px solid var(--gold);
-    border-radius:6px;
-    pointer-events:none;
-    opacity:.5;
-  }
-  h1{
-    font-family:'Georgia', serif;
-    text-align:center;
-    color:var(--gold-light);
-    letter-spacing:2px;
-    font-size:26px;
-    margin:18px 0 4px;
-    text-shadow:0 2px 4px #000;
-  }
-  h1 .rune{color:var(--gold);}
-  .subtitle{
-    text-align:center;color:var(--parchment-dark);font-size:13px;margin-bottom:18px;letter-spacing:1px;
-  }
-  h2{font-family:Georgia, serif;color:var(--wood-dark);border-bottom:2px solid var(--gold);padding-bottom:6px;margin-top:0;}
-  h3{color:var(--wood);margin-bottom:6px;}
-  p{line-height:1.5;}
-  label{display:block;font-weight:bold;margin:10px 0 4px;color:var(--wood-dark);font-size:14px;}
-  input[type=text], input[type=number], input[type=password], select, textarea{
-    width:100%;padding:9px 10px;border:2px solid var(--wood-light);border-radius:6px;
-    background:#fffdf6;font-size:15px;font-family:inherit;
-  }
-  textarea{resize:vertical;min-height:50px;}
-  button{
-    background:linear-gradient(180deg,var(--gold-light),var(--gold));
-    border:2px solid var(--wood-dark);
-    color:var(--wood-dark);
-    font-weight:bold;
-    padding:10px 16px;
-    border-radius:8px;
-    cursor:pointer;
-    font-size:15px;
-    margin:6px 6px 6px 0;
-    font-family:inherit;
-    box-shadow:0 3px 0 var(--wood-dark);
-    transition:transform .05s;
-  }
-  button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--wood-dark);}
-  button.secondary{background:#cfc4a4;}
-  button.danger{background:linear-gradient(180deg,#c97050,var(--red));color:#fff8ec;}
-  button.full{width:100%;display:block;}
-  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
-  .pill{
-    display:inline-block;background:var(--wood);color:var(--parchment);
-    padding:3px 10px;border-radius:14px;font-size:12px;margin:2px;
-  }
-  .option-btn{
-    display:block;width:100%;text-align:left;padding:12px 14px;margin:8px 0;
-    background:#fffdf6;border:2px solid var(--wood-light);border-radius:8px;
-    cursor:pointer;font-size:15px;color:var(--ink);box-shadow:none;
-  }
-  .option-btn:hover{background:#fff3d6;}
-  .option-btn.selected{background:var(--gold-light);border-color:var(--wood-dark);}
-  .option-btn.correct{background:#bfe0ab;border-color:var(--green);}
-  .option-btn.wrong{background:#e8b3a6;border-color:var(--red);}
-  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-  .topbar button{margin:0;padding:6px 10px;font-size:13px;}
-  .progress-wrap{background:#d8c9a0;border-radius:8px;overflow:hidden;height:10px;margin:10px 0;border:1px solid var(--wood);}
-  .progress-bar{background:var(--green);height:100%;transition:width .2s;}
-  .timer{font-weight:bold;color:var(--red);font-size:13px;}
-  table{width:100%;border-collapse:collapse;font-size:14px;}
-  th,td{padding:6px 8px;text-align:left;border-bottom:1px solid var(--wood-light);}
-  th{color:var(--wood-dark);}
-  .rank-1{color:var(--gold);font-weight:bold;}
-  .small{font-size:12px;color:var(--wood);}
-  .qlist-item{border:1px solid var(--wood-light);border-radius:6px;padding:8px;margin-bottom:6px;background:#fffdf6;}
-  .flex-between{display:flex;justify-content:space-between;align-items:center;}
-  .tag-mol{background:var(--red);color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;}
-  .center{text-align:center;}
-  .hidden{display:none;}
-  .loading{text-align:center;color:var(--parchment-dark);padding:40px;}
-  .axe-divider{text-align:center;color:var(--gold);margin:10px 0;letter-spacing:8px;}
+:root{
+  --wood-dark:#2b1d12;
+  --wood:#4a2f1c;
+  --wood-light:#6b4226;
+  --parchment:#f3e6c8;
+  --parchment-dark:#e3d2a3;
+  --gold:#c9962c;
+  --gold-light:#e8b94d;
+  --red:#8a2c20;
+  --green:#3a5a30;
+  --ink:#2a1f14;
+  --shadow:rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  font-family:'Trebuchet MS', Verdana, sans-serif;
+  background: radial-gradient(circle at 50% 0%, #3c2a1a, #1c130b 70%);
+  color:var(--ink);
+  min-height:100vh;
+}
+#app{max-width:520px;margin:0 auto;padding:16px 16px 60px;}
+.card{
+  background:var(--parchment);
+  border:3px solid var(--wood);
+  border-radius:10px;
+  padding:18px;
+  margin-bottom:16px;
+  box-shadow:0 6px 16px var(--shadow);
+  position:relative;
+}
+.card::before{
+  content:"";
+  position:absolute;inset:6px;
+  border:1px solid var(--gold);
+  border-radius:6px;
+  pointer-events:none;
+  opacity:.5;
+}
+h1{
+  font-family:'Georgia', serif;
+  text-align:center;
+  color:var(--gold-light);
+  letter-spacing:2px;
+  font-size:26px;
+  margin:18px 0 4px;
+  text-shadow:0 2px 4px #000;
+}
+h1 .rune{color:var(--gold);}
+.subtitle{
+  text-align:center;color:var(--parchment-dark);font-size:13px;margin-bottom:18px;letter-spacing:1px;
+}
+h2{font-family:Georgia, serif;color:var(--wood-dark);border-bottom:2px solid var(--gold);padding-bottom:6px;margin-top:0;}
+h3{color:var(--wood);margin-bottom:6px;}
+p{line-height:1.5;}
+label{display:block;font-weight:bold;margin:10px 0 4px;color:var(--wood-dark);font-size:14px;}
+input[type=text], input[type=number], input[type=password], select, textarea{
+  width:100%;padding:9px 10px;border:2px solid var(--wood-light);border-radius:6px;
+  background:#fffdf6;font-size:15px;font-family:inherit;
+}
+textarea{resize:vertical;min-height:50px;}
+button{
+  background:linear-gradient(180deg,var(--gold-light),var(--gold));
+  border:2px solid var(--wood-dark);
+  color:var(--wood-dark);
+  font-weight:bold;
+  padding:10px 16px;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:15px;
+  margin:6px 6px 6px 0;
+  font-family:inherit;
+  box-shadow:0 3px 0 var(--wood-dark);
+  transition:transform .05s;
+}
+button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--wood-dark);}
+button.secondary{background:#cfc4a4;}
+button.danger{background:linear-gradient(180deg,#c97050,var(--red));color:#fff8ec;}
+button.full{width:100%;display:block;margin-left:0;}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.pill{
+  display:inline-block;background:var(--wood);color:var(--parchment);
+  padding:3px 10px;border-radius:14px;font-size:12px;margin:2px;
+}
+.pill-green{background:var(--green);}
+.option-btn{
+  display:block;width:100%;text-align:left;padding:12px 14px;margin:8px 0;
+  background:#fffdf6;border:2px solid var(--wood-light);border-radius:8px;
+  cursor:pointer;font-size:15px;color:var(--ink);box-shadow:none;
+}
+.option-btn:hover{background:#fff3d6;}
+.option-btn.selected{background:var(--gold-light);border-color:var(--wood-dark);}
+.option-btn.correct{background:#bfe0ab;border-color:var(--green);}
+.option-btn.wrong{background:#e8b3a6;border-color:var(--red);}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.topbar button{margin:0;padding:6px 10px;font-size:13px;}
+.progress-wrap{background:#d8c9a0;border-radius:8px;overflow:hidden;height:10px;margin:10px 0;border:1px solid var(--wood);}
+.progress-bar{background:var(--green);height:100%;transition:width .2s;}
+.timer{font-weight:bold;color:var(--red);font-size:13px;}
+table{width:100%;border-collapse:collapse;font-size:14px;}
+th,td{padding:6px 8px;text-align:left;border-bottom:1px solid var(--wood-light);}
+th{color:var(--wood-dark);}
+.rank-1 td{color:var(--gold);font-weight:bold;}
+.rank-last td{color:var(--red);}
+.small{font-size:12px;color:var(--wood);}
+.qlist-item{border:1px solid var(--wood-light);border-radius:6px;padding:8px;margin-bottom:6px;background:#fffdf6;}
+.flex-between{display:flex;justify-content:space-between;align-items:center;}
+.tag-mol{background:var(--red);color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;}
+.center{text-align:center;}
+.hidden{display:none;}
+.loading{text-align:center;color:var(--parchment-dark);padding:40px;}
+.axe-divider{text-align:center;color:var(--gold);margin:10px 0;letter-spacing:8px;}
+.winner-box{background:linear-gradient(135deg,#fff8dc,#f3e6c8);border:2px solid var(--gold);border-radius:10px;padding:14px;margin:10px 0;text-align:center;}
+.loser-box{background:#fdf0ee;border:2px solid var(--red);border-radius:10px;padding:14px;margin:10px 0;text-align:center;}
+.trophy{font-size:32px;}
 </style>
 </head>
 <body>
@@ -127,14 +132,13 @@
 const PIN = "1066";
 const POINTS_PER_Q = 10;
 const DAYS = [1,2,3,4,5,6];
-let me = null; // {id,name} currently selected player (local only, resets on reload)
+let me = null;
 let isAdmin = false;
-let quizState = null; // active quiz run state
+let quizState = null;
 
-// ---------- FIREBASE CONFIG ----------
-// Vul hieronder de Realtime Database URL van je eigen (gratis) Firebase project in.
-// Zie de instructies die je erbij hebt gekregen om dit project in 5 minuten aan te maken.
-let FIREBASE_URL = localStorage.getItem("mol_firebase_url") || "";
+// ---------- FIREBASE CONFIG (vast ingesteld) ----------
+const FIREBASE_URL_DEFAULT = "https://wie-is-de-mol-2026-default-rtdb.europe-west1.firebasedatabase.app";
+let FIREBASE_URL = localStorage.getItem("mol_firebase_url") || FIREBASE_URL_DEFAULT;
 
 async function sGet(path){
   if(!FIREBASE_URL) return null;
@@ -160,6 +164,7 @@ async function sSet(path, val){
     return r.ok;
   } catch(e){ console.error("firebase set failed", path, e); return false; }
 }
+
 function uid(){ return "p" + Math.random().toString(36).slice(2,9); }
 function esc(s){ return (s||"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 
@@ -173,30 +178,38 @@ async function getBank(){
   if(!d) return [];
   return Array.isArray(d) ? d.filter(Boolean) : Object.values(d);
 }
-async function getDay(n){ return (await sGet("days/"+n)) || {questionIds:[], dayQuestions:[], molId:null, open:false, votingOpen:false, closed:false}; }
-async function getAnswer(day, playerId){ return await sGet("answers/"+day+"/"+playerId); }
+// FIX: getDay gebruikte eerder een getal als sleutel — Firebase slaat dit op als array-index.
+// Door de sleutel als string "day_N" op te slaan, werkt dag 1 correct.
+async function getDay(n){
+  const d = await sGet("days/day_"+n);
+  return d || {questionIds:[], dayQuestions:[], molId:null, open:false, votingOpen:false, closed:false};
+}
+async function setDay(n, val){ return await sSet("days/day_"+n, val); }
+async function getAnswer(day, playerId){ return await sGet("answers/day_"+day+"/"+playerId); }
+async function setAnswer(day, playerId, val){ return await sSet("answers/day_"+day+"/"+playerId, val); }
 async function getProfile(playerId){ return (await sGet("profiles/"+playerId)) || {}; }
 async function saveProfile(playerId, data){ return await sSet("profiles/"+playerId, data); }
 
+// ---------- MOLLICITATIE VRAGEN ----------
 const FIXED_QUESTIONS = [
-  {key:"eten", label:"Favoriete eten", template:a=>`Wie houdt het meest van ${a}?`},
-  {key:"muziek", label:"Favoriete muziek / artiest", template:a=>`Wie luistert het meest naar ${a}?`},
-  {key:"film", label:"Favoriete film of serie", template:a=>`Van wie is dit de favoriete film of serie: ${a}?`},
-  {key:"huisdier", label:"Huisdieren", template:a=>`Wie heeft dit huisdier (of deze huisdieren): ${a}?`},
-  {key:"hobby", label:"Hobby / vrije tijd", template:a=>`Wie doet dit het liefst in zijn of haar vrije tijd: ${a}?`},
-  {key:"vak", label:"Lievelingsvak op school", template:a=>`Wiens lievelingsvak op school is ${a}?`},
-  {key:"vakantie", label:"Droomvakantiebestemming", template:a=>`Wie wil het allerliefst naartoe: ${a}?`},
-  {key:"bijnaam", label:"Bijnaam", template:a=>`Wiens bijnaam is dit: ${a}?`},
-  {key:"minstvak", label:"Minst favoriete vak", template:a=>`Wie heeft hier een hekel aan: ${a}?`},
-  {key:"genant", label:"Gênante situatie", template:a=>`Bij wie is dit ooit gebeurd: ${a}?`},
-  {key:"jeugd", label:"Jeugdherinnering", template:a=>`Van wie is dit een jeugdherinnering: ${a}?`},
-  {key:"superkracht", label:"Gekozen superkracht", template:a=>`Wie zou deze superkracht kiezen: ${a}?`},
-  {key:"goedin", label:"Iets waar je stiekem goed in bent", template:a=>`Wie is hier stiekem heel goed in: ${a}?`},
-  {key:"droom", label:"Grootste droom of ambitie", template:a=>`Wiens grote droom is dit: ${a}?`},
-  {key:"gewoonte", label:"Typische eigenaardigheid", template:a=>`Bij wie hoort deze gewoonte: ${a}?`},
-  {key:"bang", label:"Vroeger bang voor, nu niet meer", template:a=>`Wie was hier vroeger bang voor: ${a}?`},
-  {key:"trots", label:"Waar het meest trots op", template:a=>`Wie is hier het meest trots op: ${a}?`},
-  {key:"onzichtbaar", label:"Wat zou je doen als je 1 dag onzichtbaar was", template:a=>`Wie zou dit doen als hij of zij onzichtbaar was: ${a}?`}
+  {key:"eten",       label:"Favoriete eten",                              template:a=>`Wie houdt het meest van ${a}?`},
+  {key:"muziek",     label:"Favoriete muziek / artiest",                  template:a=>`Wie luistert het meest naar ${a}?`},
+  {key:"film",       label:"Favoriete film of serie",                     template:a=>`Van wie is dit de favoriete film of serie: ${a}?`},
+  {key:"huisdier",   label:"Huisdieren",                                  template:a=>`Wie heeft dit huisdier (of deze huisdieren): ${a}?`},
+  {key:"hobby",      label:"Hobby / vrije tijd",                          template:a=>`Wie doet dit het liefst in zijn of haar vrije tijd: ${a}?`},
+  {key:"vak",        label:"Lievelingsvak op school",                     template:a=>`Wiens lievelingsvak op school is ${a}?`},
+  {key:"vakantie",   label:"Droomvakantiebestemming",                     template:a=>`Wie wil het allerliefst naartoe: ${a}?`},
+  {key:"bijnaam",    label:"Bijnaam",                                     template:a=>`Wiens bijnaam is dit: ${a}?`},
+  {key:"minstvak",   label:"Minst favoriete vak",                        template:a=>`Wie heeft hier een hekel aan op school: ${a}?`},
+  {key:"genant",     label:"Gênante situatie",                            template:a=>`Bij wie is dit ooit gebeurd: ${a}?`},
+  {key:"jeugd",      label:"Jeugdherinnering",                            template:a=>`Van wie is dit een jeugdherinnering: ${a}?`},
+  {key:"superkracht",label:"Gekozen superkracht",                         template:a=>`Wie zou deze superkracht kiezen: ${a}?`},
+  {key:"goedin",     label:"Iets waar je stiekem goed in bent",           template:a=>`Wie is hier stiekem heel goed in: ${a}?`},
+  {key:"droom",      label:"Grootste droom of ambitie",                   template:a=>`Wiens grote droom is dit: ${a}?`},
+  {key:"gewoonte",   label:"Typische eigenaardigheid",                    template:a=>`Bij wie hoort deze gewoonte: ${a}?`},
+  {key:"bang",       label:"Vroeger bang voor, nu niet meer",             template:a=>`Wie was hier vroeger bang voor: ${a}?`},
+  {key:"trots",      label:"Waar het meest trots op",                     template:a=>`Wie is hier het meest trots op: ${a}?`},
+  {key:"onzichtbaar",label:"Wat zou je doen als je 1 dag onzichtbaar was",template:a=>`Wie zou dit doen als hij of zij onzichtbaar was: ${a}?`}
 ];
 
 function render(html){ document.getElementById("content").innerHTML = html; }
@@ -225,6 +238,7 @@ async function showStart(){
 
 // ---------- PLAYER LOGIN ----------
 async function showPlayerLogin(){
+  render(`<div class="loading">Spelers laden...</div>`);
   const players = await getPlayers();
   if(players.length===0){
     render(`<div class="card center">
@@ -240,52 +254,62 @@ async function showPlayerLogin(){
       <label>Kies jouw naam</label>
       <select id="playerSelect">${opts}</select>
       <button class="full" style="margin-top:14px" onclick="confirmPlayer()">Verder</button>
-      <button class="secondary" onclick="showStart()">&larr; Terug</button>
+      <button class="secondary full" onclick="showStart()">&larr; Terug</button>
     </div>
   `);
 }
+
 async function confirmPlayer(){
   const players = await getPlayers();
   const id = document.getElementById("playerSelect").value;
   me = players.find(p=>p.id===id);
+  render(`<div class="loading">Gegevens laden...</div>`);
   const profile = await getProfile(me.id);
-  if(!profile.completed){
-    showProfileIntake(profile);
+  if(!profile || !profile.completed){
+    showProfileIntake(profile || {});
   } else {
     showPlayerHome();
   }
 }
 
-// ---------- PLAYER-EIGEN MOLLICITATIE INVULLEN (eerste keer) ----------
+// ---------- MOLLICITATIE BIJ EERSTE LOGIN ----------
 function showProfileIntake(existingProfile){
   let html = `
     <div class="card">
-      <h2>Welkom, ${esc(me.name)}!</h2>
-      <p>Voor je begint, vragen we je eerst dit korte vragenlijstje in te vullen &mdash; net als de mollicitatie. Je antwoorden worden vertrouwelijk gebruikt om straks de testvragen mee te maken. Niemand anders ziet jouw antwoorden, alleen de organisatie. Je mag een vraag leeg laten als je dat liever hebt.</p>
+      <h2>Welkom bij de Mol, ${esc(me.name)}!</h2>
+      <p>Voordat je begint, vul je eerst jouw <strong>mollicitatie</strong> in. Jouw antwoorden worden gebruikt om vragen over jou te maken voor de andere spelers. Niemand anders ziet jouw antwoorden — alleen de organisatie. Je mag een vraag leeg laten als je dat liever hebt.</p>
     </div>
     <div class="card">
+      <h2>Jouw mollicitatie</h2>
   `;
   FIXED_QUESTIONS.forEach(fq=>{
-    html += `<label>${esc(fq.label)}</label><textarea id="intake_${fq.key}">${esc((existingProfile&&existingProfile[fq.key])||"")}</textarea>`;
+    html += `<label>${esc(fq.label)}</label><textarea id="intake_${fq.key}" placeholder="Jouw antwoord...">${esc((existingProfile && existingProfile[fq.key])||"")}</textarea>`;
   });
   html += `
-      <button class="full" style="margin-top:14px" onclick="submitProfileIntake()">Klaar, ga verder naar de testen</button>
+      <button class="full" style="margin-top:16px" onclick="submitProfileIntake()">✓ Klaar — ga naar de testen</button>
     </div>
   `;
   render(html);
 }
+
 async function submitProfileIntake(){
-  const data = {completed:true};
+  const data = {completed: true};
   FIXED_QUESTIONS.forEach(fq=>{
-    const v = document.getElementById("intake_"+fq.key).value.trim();
-    if(v) data[fq.key] = v;
+    const el = document.getElementById("intake_"+fq.key);
+    if(el){
+      const v = el.value.trim();
+      if(v) data[fq.key] = v;
+    }
   });
+  render(`<div class="loading">Antwoorden opslaan...</div>`);
   const ok = await saveProfile(me.id, data);
-  if(!ok){ alert("Opslaan is mislukt. Controleer je internetverbinding en probeer opnieuw."); return; }
+  if(!ok){ alert("Opslaan is mislukt. Controleer je internetverbinding en probeer opnieuw."); showProfileIntake(data); return; }
   showPlayerHome();
 }
 
+// ---------- PLAYER HOME ----------
 async function showPlayerHome(){
+  render(`<div class="loading">Overzicht laden...</div>`);
   let rows = "";
   for(const d of DAYS){
     const day = await getDay(d);
@@ -310,24 +334,31 @@ async function showPlayerHome(){
       ${rows}
     </div>
     <div class="card">
-      <h2>Scorebord</h2>
+      <h2>🏆 Totaal ranglijst</h2>
       <div id="scoreboardHolder">laden...</div>
     </div>
   `);
-  renderScoreboard("scoreboardHolder");
+  renderScoreboard("scoreboardHolder", false);
 }
 
 // ---------- QUIZ FLOW ----------
 async function startQuiz(dayNum){
+  render(`<div class="loading">Test laden...</div>`);
   const day = await getDay(dayNum);
   const bank = await getBank();
   const players = await getPlayers();
   const bankQs = day.questionIds.map(id=>bank.find(b=>b.id===id)).filter(Boolean);
   const dayQs = (day.dayQuestions||[]);
   const allQs = [...bankQs, ...dayQs].map(q=>({...q}));
+  if(allQs.length===0){
+    render(`<div class="card center"><p>Deze dag heeft nog geen vragen. Vraag de organisator.</p><button onclick="showPlayerHome()">Terug</button></div>`);
+    return;
+  }
   quizState = {
-    dayNum, questions: allQs, idx: 0, answers: new Array(allQs.length).fill(null),
-    qStart: Date.now(), totalStart: Date.now(), times: new Array(allQs.length).fill(0),
+    dayNum, questions: allQs, idx: 0,
+    answers: new Array(allQs.length).fill(null),
+    qStart: Date.now(), totalStart: Date.now(),
+    times: new Array(allQs.length).fill(0),
     molGuess: null, players
   };
   renderQuizQuestion();
@@ -352,6 +383,7 @@ function renderQuizQuestion(){
   `);
   qs.qStart = Date.now();
 }
+
 function answerQuestion(i){
   const qs = quizState;
   qs.answers[qs.idx] = i;
@@ -366,12 +398,13 @@ async function renderMolGuess(){
   const opts = others.map(p=>`<button class="option-btn" onclick="answerMolGuess('${p.id}')">${esc(p.name)}</button>`).join("");
   render(`
     <div class="card">
-      <h3>Laatste vraag, helemaal geheim...</h3>
+      <h3>Laatste vraag — helemaal geheim...</h3>
       <p>Wie denk jij dat <strong>vandaag</strong> de Mol is?</p>
       ${opts}
     </div>
   `);
 }
+
 async function answerMolGuess(playerId){
   quizState.molGuess = playerId;
   await finishQuiz();
@@ -379,6 +412,7 @@ async function answerMolGuess(playerId){
 
 async function finishQuiz(){
   const qs = quizState;
+  render(`<div class="loading">Resultaten opslaan...</div>`);
   const day = await getDay(qs.dayNum);
   const bank = await getBank();
   const bankQs = day.questionIds.map(id=>bank.find(b=>b.id===id)).filter(Boolean);
@@ -392,7 +426,7 @@ async function finishQuiz(){
     answers: qs.answers, times: qs.times, totalTimeMs,
     correct, score, molGuess: qs.molGuess, submitted: true, submittedAt: Date.now()
   };
-  await sSet("answers/"+qs.dayNum+"/"+me.id, record);
+  await setAnswer(qs.dayNum, me.id, record);
   render(`
     <div class="card center">
       <h2>Test ingeleverd!</h2>
@@ -408,27 +442,24 @@ async function finishQuiz(){
 async function computeScoreboard(){
   const players = await getPlayers();
   const totals = {};
-  players.forEach(p=>totals[p.id]={name:p.name, points:0, time:0, molDays:[]});
+  players.forEach(p=>totals[p.id]={id:p.id, name:p.name, points:0, time:0, molDays:[], dayScores:{}});
+
   for(const d of DAYS){
     const day = await getDay(d);
     const maxForDay = (day.questionIds.length + ((day.dayQuestions||[]).length)) * POINTS_PER_Q;
-
-    // eerst ieders eigen quizscore voor deze dag
     const dayScores = {};
     for(const p of players){
       const ans = await getAnswer(d, p.id);
-      dayScores[p.id] = (ans && ans.submitted) ? {score: ans.score, time: ans.totalTimeMs} : {score:0, time:0};
+      dayScores[p.id] = (ans && ans.submitted) ? {score: ans.score, time: ans.totalTimeMs||0} : {score:0, time:0};
     }
-
-    // Mol-bonus erbij, maar gecapt op het maximaal haalbare van die dag
     if(day.molId && day.closed && dayScores[day.molId]){
-      let wrongGuessers = 0, totalGuessers = 0;
+      let wrongGuessers=0, totalGuessers=0;
       for(const p of players){
         if(p.id===day.molId) continue;
         const ans = await getAnswer(d, p.id);
         if(ans && ans.submitted && ans.molGuess){
           totalGuessers++;
-          if(ans.molGuess !== day.molId) wrongGuessers++;
+          if(ans.molGuess!==day.molId) wrongGuessers++;
         }
       }
       const bonus = wrongGuessers * POINTS_PER_Q;
@@ -437,27 +468,51 @@ async function computeScoreboard(){
       totals[day.molId].molDays.push({day:d, bonus, wrongGuessers, totalGuessers, capped: uncapped>capped});
       dayScores[day.molId].score = capped;
     }
-
     for(const p of players){
       totals[p.id].points += dayScores[p.id].score;
       totals[p.id].time += dayScores[p.id].time;
+      totals[p.id].dayScores[d] = dayScores[p.id].score;
     }
   }
-  return Object.values(totals).sort((a,b)=> b.points - a.points || a.time - b.time);
+  return Object.values(totals).sort((a,b)=> b.points-a.points || a.time-b.time);
 }
-async function renderScoreboard(targetId){
+
+async function computeDayResults(d){
+  // Geeft {winnerId, loserId} exclusief Mol
+  const day = await getDay(d);
+  if(!day.closed || !day.molId) return null;
+  const players = await getPlayers();
+  const eligible = players.filter(p=>p.id!==day.molId);
+  const scores = [];
+  for(const p of eligible){
+    const ans = await getAnswer(d, p.id);
+    if(ans && ans.submitted){
+      scores.push({id:p.id, name:p.name, score:ans.score, time:ans.totalTimeMs||0});
+    }
+  }
+  if(scores.length===0) return null;
+  scores.sort((a,b)=>b.score-a.score||a.time-b.time);
+  return {winner: scores[0], loser: scores[scores.length-1], all: scores};
+}
+
+async function renderScoreboard(targetId, showDayResults){
+  const el = document.getElementById(targetId);
+  if(!el) return;
   const ranking = await computeScoreboard();
   const rows = ranking.map((r,i)=>`
-    <tr class="${i===0?'rank-1':''}">
-      <td>${i+1}</td><td>${esc(r.name)}</td><td>${r.points}</td>
+    <tr class="${i===0?'rank-1':i===ranking.length-1?'rank-last':''}">
+      <td>${i===0?'🥇':i===ranking.length-1?'💀':i+1}</td>
+      <td>${esc(r.name)}</td>
+      <td>${r.points}</td>
       <td class="small">${(r.time/1000).toFixed(1)}s</td>
     </tr>`).join("");
-  document.getElementById(targetId).innerHTML = `
+  let html = `
     <table>
       <tr><th>#</th><th>Speler</th><th>Punten</th><th>Tijd</th></tr>
       ${rows}
     </table>
   `;
+  el.innerHTML = html;
 }
 
 // ---------- ADMIN ----------
@@ -468,7 +523,7 @@ async function showAdminLogin(){
       <label>Voer de geheime PIN in</label>
       <input type="password" id="pinInput" placeholder="PIN">
       <button class="full" style="margin-top:14px" onclick="checkPin()">Inloggen</button>
-      <button class="secondary" onclick="showStart()">&larr; Terug</button>
+      <button class="secondary full" onclick="showStart()">&larr; Terug</button>
     </div>
   `);
 }
@@ -483,28 +538,31 @@ async function showAdminHome(){
     ${topbar("Organisator", "showStart")}
     <div class="card">
       <h2>Beheer</h2>
-      <button class="full" onclick="showManagePlayers()">Spelers beheren</button>
-      <button class="full" onclick="showManageProfiles()">Mollicitatie-antwoorden invoeren</button>
-      <button class="full" onclick="showGenerateQuestion()">Vraag genereren uit antwoorden</button>
-      <button class="full" onclick="showManageBank()">Vragenbank (handmatig)</button>
-      <button class="full" onclick="showManageDays()">Dagen instellen (Mol + vragen)</button>
-      <button class="full" onclick="showAdminScoreboard()">Scorebord & uitslag</button>
+      <button class="full" onclick="showManagePlayers()">👥 Spelers beheren</button>
+      <button class="full" onclick="showManageProfiles()">📝 Mollicitatie-antwoorden bekijken</button>
+      <button class="full" onclick="showGenerateQuestion()">⚡ Vraag genereren uit antwoorden</button>
+      <button class="full" onclick="showManageBank()">📚 Vragenbank (handmatig)</button>
+      <button class="full" onclick="showManageDays()">📅 Dagen instellen (Mol + vragen)</button>
+      <button class="full" onclick="showAdminScoreboard()">🏆 Scorebord & uitslag</button>
     </div>
   `);
 }
 
-// -- players --
+// ---------- SPELERS ----------
 async function showManagePlayers(){
+  render(`<div class="loading">Laden...</div>`);
   const players = await getPlayers();
   let rows = "";
   for(const p of players){
     const profile = await getProfile(p.id);
-    const status = profile.completed ? `<span class="pill">mollicitatie ingevuld</span>` : `<span class="small">nog niet ingevuld</span>`;
+    const status = profile.completed
+      ? `<span class="pill pill-green">mollicitatie ingevuld ✓</span>`
+      : `<span class="small" style="color:var(--red)">nog niet ingevuld</span>`;
     rows += `
-    <div class="qlist-item flex-between">
-      <span>${esc(p.name)}<br>${status}</span>
-      <button class="danger" onclick="removePlayer('${p.id}')">Verwijder</button>
-    </div>`;
+      <div class="qlist-item flex-between">
+        <div><strong>${esc(p.name)}</strong><br>${status}</div>
+        <button class="danger" onclick="removePlayer('${p.id}')">Verwijder</button>
+      </div>`;
   }
   rows = rows || "<p class='small'>Nog geen spelers toegevoegd.</p>";
   render(`
@@ -512,7 +570,7 @@ async function showManagePlayers(){
     <div class="card">
       <h2>Spelers (${players.length})</h2>
       ${rows}
-      <label>Nieuwe speler</label>
+      <label>Nieuwe speler toevoegen</label>
       <div class="row">
         <input type="text" id="newPlayerName" placeholder="Naam" style="flex:1">
         <button onclick="addPlayer()">Toevoegen</button>
@@ -526,7 +584,7 @@ async function addPlayer(){
   const players = await getPlayers();
   players.push({id: uid(), name});
   const ok = await sSet("players", players);
-  if(!ok){ alert("Opslaan is mislukt. Controleer of de databasekoppeling klopt en of de Firebase-regels lezen/schrijven toestaan (zie 'database-koppeling wijzigen' en de Rules-tab in Firebase)."); return; }
+  if(!ok){ alert("Opslaan is mislukt. Controleer of de Firebase-regels lezen/schrijven toestaan."); return; }
   showManagePlayers();
 }
 async function removePlayer(id){
@@ -537,18 +595,19 @@ async function removePlayer(id){
   showManagePlayers();
 }
 
-// -- profiles --
+// ---------- MOLLICITATIE PROFIELEN (ADMIN) ----------
 async function showManageProfiles(){
+  render(`<div class="loading">Laden...</div>`);
   const players = await getPlayers();
   if(players.length===0){
-    render(`${topbar("Mollicitatie-antwoorden", "showAdminHome")}<div class="card"><p class="small">Voeg eerst spelers toe.</p></div>`);
+    render(`${topbar("Mollicitatie-antwoorden","showAdminHome")}<div class="card"><p class="small">Voeg eerst spelers toe.</p></div>`);
     return;
   }
   const opts = players.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("");
   render(`
     ${topbar("Mollicitatie-antwoorden", "showAdminHome")}
     <div class="card">
-      <p class="small">Tik hier per speler over de antwoorden uit hun ingevulde mollicitatieformulier. Laat een vraag leeg als de speler 'm niet heeft beantwoord. Op basis hiervan kun je straks automatisch "wie zei dit?"-vragen genereren.</p>
+      <p class="small">Hier kun je de antwoorden van elke speler bekijken en handmatig aanpassen (bijv. als iemand het papieren formulier heeft ingevuld).</p>
       <label>Kies speler</label>
       <select id="profilePlayerSelect" onchange="loadProfileForm()">${opts}</select>
       <div id="profileForm" style="margin-top:14px"></div>
@@ -568,27 +627,29 @@ async function loadProfileForm(){
 }
 async function saveProfileForm(){
   const playerId = document.getElementById("profilePlayerSelect").value;
-  const data = {completed:true};
+  const data = {completed: true};
   FIXED_QUESTIONS.forEach(fq=>{
     const v = document.getElementById("pf_"+fq.key).value.trim();
     if(v) data[fq.key] = v;
   });
   const ok = await saveProfile(playerId, data);
   if(!ok){ alert("Opslaan is mislukt, controleer de databasekoppeling."); return; }
-  alert("Antwoorden opgeslagen.");
+  alert("Antwoorden opgeslagen!");
 }
 
-// -- question generator --
+// ---------- VRAAG GENERATOR ----------
 async function showGenerateQuestion(){
+  render(`<div class="loading">Laden...</div>`);
   const players = await getPlayers();
-  if(players.length < 4){
-    render(`${topbar("Vraag genereren", "showAdminHome")}<div class="card"><p class="small">Je hebt minstens 4 spelers nodig om hieruit te kunnen kiezen.</p></div>`);
+  if(players.length<4){
+    render(`${topbar("Vraag genereren","showAdminHome")}<div class="card"><p class="small">Je hebt minstens 4 spelers nodig.</p></div>`);
     return;
   }
   const templateOpts = FIXED_QUESTIONS.map(fq=>`<option value="${fq.key}">${esc(fq.label)}</option>`).join("");
   render(`
-    ${topbar("Vraag genereren uit antwoorden", "showAdminHome")}
+    ${topbar("Vraag genereren", "showAdminHome")}
     <div class="card">
+      <p class="small">Kies een onderwerp, selecteer de speler met het juiste antwoord, en voeg de vraag toe aan de bank.</p>
       <label>Onderwerp</label>
       <select id="gen_template" onchange="loadGenCorrectOptions()">${templateOpts}</select>
       <div id="genBody" style="margin-top:14px"></div>
@@ -605,14 +666,14 @@ async function loadGenCorrectOptions(){
     if(profile[key]) rows.push({id:p.id, name:p.name, answer:profile[key]});
   }
   if(rows.length===0){
-    document.getElementById("genBody").innerHTML = `<p class="small">Niemand heeft hier nog een antwoord voor ingevoerd. Ga naar "Mollicitatie-antwoorden invoeren".</p>`;
+    document.getElementById("genBody").innerHTML = `<p class="small">Niemand heeft hier nog een antwoord voor ingevuld. Ga naar "Mollicitatie-antwoorden bekijken".</p>`;
     return;
   }
-  const opts = rows.map(r=>`<option value="${r.id}">${esc(r.name)} &mdash; "${esc(r.answer)}"</option>`).join("");
+  const opts = rows.map(r=>`<option value="${r.id}">${esc(r.name)} — "${esc(r.answer)}"</option>`).join("");
   document.getElementById("genBody").innerHTML = `
     <label>Wie is het juiste antwoord?</label>
     <select id="gen_correct">${opts}</select>
-    <button style="margin-top:8px" onclick="loadGenPreview()">Volgende</button>
+    <button style="margin-top:8px" onclick="loadGenPreview()">Volgende →</button>
     <div id="genPreview"></div>
   `;
 }
@@ -625,27 +686,26 @@ async function loadGenPreview(){
   const answerText = profile[key];
   const others = players.filter(p=>p.id!==correctId);
   const checks = others.map(p=>`
-    <label style="font-weight:normal;display:block;margin:4px 0;">
+    <label style="font-weight:normal;display:flex;gap:8px;align-items:center;margin:4px 0;">
       <input type="checkbox" class="genDistractor" value="${p.id}"> ${esc(p.name)}
     </label>`).join("");
   document.getElementById("genPreview").innerHTML = `
-    <p style="margin-top:12px"><strong>Voorbeeldtekst:</strong></p>
+    <p style="margin-top:12px"><strong>Vraagtekst (aanpasbaar):</strong></p>
     <textarea id="gen_text">${esc(fq.template(answerText))}</textarea>
-    <p class="small">Kies precies 3 andere spelers als foute opties (of klik op "willekeurig 3"):</p>
+    <p class="small">Kies precies 3 andere spelers als foute opties:</p>
     <button class="secondary" onclick="pickRandomDistractors()">Willekeurig 3 kiezen</button>
     ${checks}
-    <button class="full" style="margin-top:10px" onclick="saveGeneratedQuestion('${correctId}')">Vraag opslaan in vragenbank</button>
+    <button class="full" style="margin-top:10px" onclick="saveGeneratedQuestion('${correctId}')">✓ Vraag opslaan in vragenbank</button>
   `;
 }
 function pickRandomDistractors(){
   const boxes = Array.from(document.querySelectorAll(".genDistractor"));
   boxes.forEach(b=>b.checked=false);
-  const shuffled = boxes.sort(()=>Math.random()-0.5);
-  shuffled.slice(0,3).forEach(b=>b.checked=true);
+  [...boxes].sort(()=>Math.random()-0.5).slice(0,3).forEach(b=>b.checked=true);
 }
 async function saveGeneratedQuestion(correctId){
   const checked = Array.from(document.querySelectorAll(".genDistractor:checked")).map(el=>el.value);
-  if(checked.length !== 3){ alert("Kies precies 3 andere spelers als foute opties."); return; }
+  if(checked.length!==3){ alert("Kies precies 3 andere spelers als foute opties."); return; }
   const text = document.getElementById("gen_text").value.trim();
   if(!text){ alert("De vraagtekst mag niet leeg zijn."); return; }
   const players = await getPlayers();
@@ -655,37 +715,38 @@ async function saveGeneratedQuestion(correctId){
   const bank = await getBank();
   bank.push({id: uid()+"q", text, options, correctIndex});
   const ok = await sSet("bank", bank);
-  if(!ok){ alert("Opslaan is mislukt, controleer de databasekoppeling."); return; }
+  if(!ok){ alert("Opslaan is mislukt."); return; }
   alert("Vraag toegevoegd aan de vragenbank!");
   showManageBank();
 }
 
-// -- bank --
+// ---------- VRAGENBANK (HANDMATIG) ----------
 async function showManageBank(){
+  render(`<div class="loading">Laden...</div>`);
   const bank = await getBank();
   const rows = bank.map(q=>`
     <div class="qlist-item">
-      <div class="flex-between"><strong>${esc(q.text)}</strong>
+      <div class="flex-between">
+        <strong>${esc(q.text)}</strong>
         <button class="danger" onclick="removeBankQ('${q.id}')">Verwijder</button>
       </div>
-      <div class="small">Opties: ${q.options.map((o,i)=> (i===q.correctIndex? "<b>"+esc(o)+"</b>" : esc(o))).join(" | ")}</div>
+      <div class="small">Opties: ${q.options.map((o,i)=>(i===q.correctIndex?"<b>"+esc(o)+"</b>":esc(o))).join(" | ")}</div>
     </div>`).join("") || "<p class='small'>Nog geen vragen in de bank.</p>";
   render(`
     ${topbar("Vragenbank", "showAdminHome")}
     <div class="card">
-      <p class="small">Tip: maak vragen op basis van het mollicitatieformulier, bijv. "Wie houdt van pizza?" met de namen van spelers als opties.</p>
       <h2>Vragen (${bank.length})</h2>
       ${rows}
     </div>
     <div class="card">
-      <h2>Nieuwe vraag</h2>
+      <h2>Nieuwe vraag (handmatig)</h2>
       <label>Vraagtekst</label>
       <textarea id="bq_text" placeholder="Bijv. Wie heeft een hekel aan wiskunde?"></textarea>
-      <label>Optie 1 (goed antwoord hieronder aanvinken)</label>
-      <div class="row"><input type="radio" name="bq_correct" value="0" checked><input type="text" id="bq_opt0" placeholder="Optie 1" style="flex:1"></div>
-      <div class="row"><input type="radio" name="bq_correct" value="1"><input type="text" id="bq_opt1" placeholder="Optie 2" style="flex:1"></div>
-      <div class="row"><input type="radio" name="bq_correct" value="2"><input type="text" id="bq_opt2" placeholder="Optie 3" style="flex:1"></div>
-      <div class="row"><input type="radio" name="bq_correct" value="3"><input type="text" id="bq_opt3" placeholder="Optie 4" style="flex:1"></div>
+      ${[0,1,2,3].map(i=>`
+        <div class="row" style="margin-top:6px">
+          <input type="radio" name="bq_correct" value="${i}" ${i===0?"checked":""}>
+          <input type="text" id="bq_opt${i}" placeholder="Optie ${i+1}" style="flex:1">
+        </div>`).join("")}
       <button class="full" style="margin-top:10px" onclick="addBankQ()">Vraag toevoegen</button>
     </div>
   `);
@@ -707,28 +768,33 @@ async function removeBankQ(id){
   showManageBank();
 }
 
-// -- days --
+// ---------- DAGEN ----------
 async function showManageDays(){
+  render(`<div class="loading">Laden...</div>`);
   let btns = DAYS.map(d=>`<button onclick="showManageDay(${d})">Dag ${d}</button>`).join("");
   render(`
     ${topbar("Dagen", "showAdminHome")}
     <div class="card">
       <h2>Kies een dag om in te stellen</h2>
-      ${btns}
+      <div class="row">${btns}</div>
     </div>
   `);
 }
 
 async function showManageDay(d){
+  render(`<div class="loading">Dag ${d} laden...</div>`);
   const day = await getDay(d);
   const players = await getPlayers();
   const bank = await getBank();
 
-  const playerOpts = players.map(p=>`<option value="${p.id}" ${day.molId===p.id?"selected":""}>${esc(p.name)}</option>`).join("");
+  // FIX: zorg dat er altijd een lege optie is als er geen spelers zijn
+  const playerOpts = players.length
+    ? players.map(p=>`<option value="${p.id}" ${day.molId===p.id?"selected":""}>${esc(p.name)}</option>`).join("")
+    : `<option value="">— Voeg eerst spelers toe —</option>`;
 
   const bankChecks = bank.map(q=>`
     <label style="font-weight:normal;display:flex;gap:8px;align-items:flex-start;">
-      <input type="checkbox" class="bankPick" value="${q.id}" ${day.questionIds.includes(q.id)?"checked":""} style="margin-top:4px">
+      <input type="checkbox" class="bankPick" value="${q.id}" ${(day.questionIds||[]).includes(q.id)?"checked":""} style="margin-top:4px">
       <span>${esc(q.text)}</span>
     </label>`).join("");
 
@@ -748,27 +814,29 @@ async function showManageDay(d){
       </div>`;
   }
 
+  const statusTxt = day.closed ? "✅ Gesloten / afgerond" : day.open ? "🟢 Geopend voor spelers" : "🔴 Nog niet geopend";
+
   render(`
     ${topbar("Dag "+d, "showManageDays")}
     <div class="card">
-      <h2>Status</h2>
-      <p class="small">${day.open ? (day.closed ? "Gesloten / afgerond" : "Geopend voor spelers") : "Nog niet geopend"}</p>
+      <h2>Status dag ${d}</h2>
+      <p class="small">${statusTxt}</p>
       <div class="row">
-        <button onclick="setDayOpen(${d}, true)">Open test voor spelers</button>
-        <button class="secondary" onclick="setDayOpen(${d}, false)">Sluit test (geen nieuwe pogingen)</button>
-        <button class="danger" onclick="closeDayScoring(${d})">Bevestig Mol-uitslag van deze dag</button>
+        <button onclick="setDayOpen(${d}, true)">Open voor spelers</button>
+        <button class="secondary" onclick="setDayOpen(${d}, false)">Sluit test</button>
+        <button class="danger" onclick="closeDayScoring(${d})">Bevestig Mol-uitslag</button>
       </div>
-      <p class="small">"Bevestig Mol-uitslag" tel je pas in als alle 15 hun gok hebben gedaan &mdash; pas daarna telt de Mol-bonus mee in het scorebord.</p>
+      <p class="small">"Bevestig Mol-uitslag" pas indrukken als iedereen heeft gespeeld — daarna telt de Mol-bonus mee en verschijnen de dag-uitslag en ranglijst.</p>
     </div>
     <div class="card">
       <h2>Wie is de Mol op dag ${d}?</h2>
-      <p class="small">Geheim! Dit zie alleen jij als organisator.</p>
-      <select id="molSelect">${playerOpts || '<option value="">Geen spelers</option>'}</select>
+      <p class="small">Geheim! Alleen jij als organisator ziet dit.</p>
+      <select id="molSelect">${playerOpts}</select>
       <button style="margin-top:8px" onclick="saveMol(${d})">Mol opslaan</button>
     </div>
     <div class="card">
       <h2>Vragen uit de bank (kies 12)</h2>
-      <p class="small">Geselecteerd: <span id="bankCount">${day.questionIds.length}</span> / 12 aanbevolen</p>
+      <p class="small">Geselecteerd: <span id="bankCount">${(day.questionIds||[]).length}</span> / 12 aanbevolen</p>
       <div id="bankPicker">${bankChecks || "<p class='small'>Voeg eerst vragen toe aan de bank.</p>"}</div>
       <button style="margin-top:10px" onclick="saveBankPicks(${d})">Selectie opslaan</button>
     </div>
@@ -783,27 +851,30 @@ async function showManageDay(d){
 async function setDayOpen(d, openVal){
   const day = await getDay(d);
   day.open = openVal;
-  await sSet("days/"+d, day);
+  await setDay(d, day);
   showManageDay(d);
 }
 async function closeDayScoring(d){
   if(!confirm("Mol-uitslag van dag "+d+" definitief bevestigen? Doe dit pas als iedereen heeft gespeeld.")) return;
   const day = await getDay(d);
   day.closed = true;
-  await sSet("days/"+d, day);
+  await setDay(d, day);
   showManageDay(d);
 }
 async function saveMol(d){
+  const sel = document.getElementById("molSelect");
+  if(!sel || !sel.value){ alert("Kies eerst een speler als Mol."); return; }
   const day = await getDay(d);
-  day.molId = document.getElementById("molSelect").value;
-  await sSet("days/"+d, day);
+  day.molId = sel.value;
+  await setDay(d, day);
   alert("Mol voor dag "+d+" opgeslagen.");
 }
 async function saveBankPicks(d){
   const ids = Array.from(document.querySelectorAll(".bankPick:checked")).map(el=>el.value);
   const day = await getDay(d);
   day.questionIds = ids;
-  await sSet("days/"+d, day);
+  await setDay(d, day);
+  document.getElementById("bankCount").textContent = ids.length;
   alert("Geselecteerd: "+ids.length+" vragen opgeslagen.");
 }
 async function saveDayQuestions(d){
@@ -818,62 +889,105 @@ async function saveDayQuestions(d){
     }
   }
   day.dayQuestions = qs;
-  await sSet("days/"+d, day);
+  await setDay(d, day);
   alert("Dagvragen opgeslagen ("+qs.length+" van 8 ingevuld).");
 }
 
+// ---------- ADMIN SCOREBORD ----------
 async function showAdminScoreboard(){
+  render(`<div class="loading">Scorebord laden...</div>`);
   render(`
-    ${topbar("Scorebord", "showAdminHome")}
+    ${topbar("Scorebord & uitslag", "showAdminHome")}
     <div class="card">
-      <h2>Totaalstand</h2>
+      <h2>🏆 Totaal ranglijst (heel kamp)</h2>
       <div id="scoreboardHolder2">laden...</div>
+    </div>
+    <div class="card">
+      <h2>📅 Dag-uitslagen</h2>
+      <div id="dayResultsHolder">laden...</div>
     </div>
     <div class="card">
       <h3>Mol-bonus per dag</h3>
       <div id="molInfoHolder">laden...</div>
     </div>
   `);
-  renderScoreboard("scoreboardHolder2");
+  renderScoreboard("scoreboardHolder2", true);
+  renderDayResults("dayResultsHolder");
   renderMolInfo("molInfoHolder");
 }
+
+async function renderDayResults(targetId){
+  let html = "";
+  for(const d of DAYS){
+    const day = await getDay(d);
+    if(!day.closed || !day.molId){
+      html += `<div class="qlist-item"><strong>Dag ${d}</strong> <span class="small">— nog niet afgerond</span></div>`;
+      continue;
+    }
+    const result = await computeDayResults(d);
+    if(!result){
+      html += `<div class="qlist-item"><strong>Dag ${d}</strong> <span class="small">— nog geen inzendingen</span></div>`;
+      continue;
+    }
+    html += `
+      <div class="qlist-item">
+        <strong>Dag ${d}</strong>
+        <div class="winner-box" style="margin-top:8px">
+          <div class="trophy">🥇</div>
+          <strong>Dagwinnaar: ${esc(result.winner.name)}</strong><br>
+          <span class="small">${result.winner.score} punten — ${(result.winner.time/1000).toFixed(1)}s</span>
+        </div>
+        <div class="loser-box">
+          <div class="trophy">💀</div>
+          <strong>Dag-verliezer: ${esc(result.loser.name)}</strong><br>
+          <span class="small">${result.loser.score} punten — ${(result.loser.time/1000).toFixed(1)}s</span>
+        </div>
+      </div>`;
+  }
+  const el = document.getElementById(targetId);
+  if(el) el.innerHTML = html || "<p class='small'>Nog geen dagen afgerond.</p>";
+}
+
 async function renderMolInfo(targetId){
   const ranking = await computeScoreboard();
   let html = "";
   for(const r of ranking){
-    if(r.molDays.length){
+    if(r.molDays && r.molDays.length){
       for(const md of r.molDays){
         html += `<div class="qlist-item">
           <strong>${esc(r.name)}</strong> was de Mol op dag ${md.day}.<br>
-          <span class="small">${md.wrongGuessers} van ${md.totalGuessers} spelers die gokten, hadden het mis &rarr; bonus ${md.bonus} punten${md.capped ? " (afgetopt op het maximum van die dag)" : ""}.</span>
+          <span class="small">${md.wrongGuessers} van ${md.totalGuessers} spelers hadden het mis → bonus ${md.bonus} punten${md.capped?" (afgetopt op maximum)":""}.</span>
         </div>`;
       }
     }
   }
-  document.getElementById(targetId).innerHTML = html || "<p class='small'>Nog geen dagen afgerond.</p>";
+  const el = document.getElementById(targetId);
+  if(el) el.innerHTML = html || "<p class='small'>Nog geen dagen afgerond.</p>";
 }
 
-// ---------- HOSTING SETUP ----------
+// ---------- DATABASE SETUP ----------
 function showSetup(){
   render(`
     <div class="card">
-      <h2>Eenmalige koppeling</h2>
-      <p>Deze app slaat alle gegevens op in jullie eigen gratis Firebase-database, zodat het op alle telefoons werkt. Plak hieronder de Database URL (zie de instructies).</p>
+      <h2>Database-koppeling</h2>
+      <p>De Firebase URL is al ingesteld. Je kunt hem hier wijzigen als dat nodig is.</p>
       <label>Firebase Realtime Database URL</label>
-      <input type="text" id="fbUrl" placeholder="https://jouw-project-default-rtdb.europe-west1.firebasedatabase.app">
-      <button class="full" style="margin-top:14px" onclick="saveSetup()">Opslaan en starten</button>
+      <input type="text" id="fbUrl" value="${esc(FIREBASE_URL)}" placeholder="https://...firebasedatabase.app">
+      <button class="full" style="margin-top:14px" onclick="saveSetup()">Opslaan en verder</button>
+      <button class="secondary full" onclick="showStart()">Annuleer</button>
     </div>
   `);
 }
 function saveSetup(){
   const v = document.getElementById("fbUrl").value.trim();
-  if(!v.startsWith("https://")){ alert("Dat lijkt geen geldige URL. Kopieer de Database URL uit de Firebase console."); return; }
+  if(!v.startsWith("https://")){ alert("Dat lijkt geen geldige URL."); return; }
   FIREBASE_URL = v;
   localStorage.setItem("mol_firebase_url", v);
   showStart();
 }
 
-if(!FIREBASE_URL){ showSetup(); } else { showStart(); }
+// ---------- START APP ----------
+showStart();
 </script>
 </body>
 </html>
