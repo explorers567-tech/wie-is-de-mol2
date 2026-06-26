@@ -1,3 +1,14 @@
+const VIKINGS = {
+  green: {
+    male: "https://i.imgur.com/8Km9tLL.png",
+    female: "https://i.imgur.com/2RXYdN8.png"
+  },
+  red: {
+    male: "https://i.imgur.com/3sKXH3T.png",
+    female: "https://i.imgur.com/jK9nE7G.png"
+  }
+};
+``
 <!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -17,17 +28,6 @@
   --green:#3a5a30;
   --ink:#2a1f14;
   --shadow:rgba(0,0,0,.35);
-}
-const VIKINGS = {
-  green: {
-    male: "https://i.imgur.com/8Km9tLL.png",   // blij
-    female: "https://i.imgur.com/2RXYdN8.png"
-  },
-  red: {
-    male: "https://i.imgur.com/3sKXH3T.png",   // huilend
-    female: "https://i.imgur.com/jK9nE7G.png"
-  }
-};
 .reveal-screen img{
   box-shadow: 0 6px 20px rgba(0,0,0,0.5);
   transition: transform 0.2s;
@@ -154,7 +154,7 @@ th{color:var(--wood-dark);}
   background: radial-gradient(circle,#b33a2f,#3d0f0a);
 }
 ``
-.reveal-name{font-family:Georgia,serif;font-size:52px;font-weight:bold;color:#fff;text-shadow:0 4px 12px rgba(0,0,0,.5);margin:16px 0;}
+/* .reveal-name{font-family:Georgia,serif;font-size:52px;font-weight:bold;color:#fff;text-shadow:0 4px 12px rgba(0,0,0,.5);margin:16px 0;} */
 .reveal-icon{font-size:90px;animation:bounceIn .5s .3s both;}
 @keyframes bounceIn{0%{transform:scale(0);}70%{transform:scale(1.15);}100%{transform:scale(1);}}
 .reveal-msg{font-size:22px;color:rgba(255,255,255,.9);margin-top:8px;}
@@ -615,20 +615,17 @@ async function showAdminHome(){
 
 // ---------- ROOD / GROEN ONTHULSCHERM ----------
 async function showRevealScreen(){
-  const players = await getPlayers();
-  const opts = players.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("");
   render(`
     ${topbar("Onthulscherm", "showAdminHome")}
     <div class="card">
       <h2>🟢🔴 Rood / Groen scherm</h2>
-      <p>Kies een speler en toon een groot groen of rood scherm op de beamer of telefoon. Gebruik dit aan het einde van de dag voor de dramatische onthulling.</p>
-      <label>Kies speler</label>
-      <select id="revealPlayerSelect">${opts}</select>
-      <div class="row" style="margin-top:16px;">
-        <button style="background:linear-gradient(180deg,#4db34d,#2d7a2d);color:#fff;border-color:#1a4d1a;flex:1;" onclick="showReveal('green')">🟢 GROEN — veilig!</button>
-        <button style="background:linear-gradient(180deg,#c97050,var(--red));color:#fff8ec;flex:1;" onclick="showReveal('red')">🔴 ROOD — afgevallen!</button>
-      </div>
-      <p class="small" style="margin-top:12px;">Tip: zet je scherm op volledig scherm (F11 of schermvergrotingsknop) voor het meeste effect.</p>
+
+      <label>Naam speler</label>
+      <input type="text" id="revealNameInput" placeholder="Bijv. Jan">
+
+      <button class="full" style="margin-top:16px" onclick="checkPlayerResult()">
+        Controleer
+      </button>
     </div>
   `);
 }
@@ -647,8 +644,21 @@ async function checkPlayerResult(){
     return;
   }
 
-  // neem laatste dag
-  // zoek laatste afgesloten dag let d = null; for(let i = DAYS.length - 1; i >= 0; i--){   const day = await getDay(DAYS[i]);   if(day.closed){     d = DAYS[i];     break;   } }  if(!d){   alert("Er is nog geen afgesloten dag.");   return; } ``
+  // ✅ automatisch laatste afgesloten dag zoeken
+  let d = null;
+  for(let i = DAYS.length - 1; i >= 0; i--){
+    const day = await getDay(DAYS[i]);
+    if(day.closed){
+      d = DAYS[i];
+      break;
+    }
+  }
+
+  if(!d){
+    alert("Er is nog geen afgesloten dag.");
+    return;
+  }
+
   const result = await computeDayResults(d);
 
   if(!result){
@@ -662,10 +672,7 @@ async function checkPlayerResult(){
     showReveal("green", player.name);
   }
 }
-  
 function showReveal(color, nameOverride){
-  let name = nameOverride;
-
   const isGreen = color === "green";
 
   const maleImg = VIKINGS[color].male;
@@ -676,11 +683,11 @@ function showReveal(color, nameOverride){
 
   div.innerHTML = `
     <div style="display:flex;gap:20px;justify-content:center;margin-bottom:20px;">
-      <img src="${maleImg}" style="width:120px;height:120px;border-radius:10px;">
-      <img src="${femaleImg}" style="width:120px;height:120px;border-radius:10px;">
+      <img src="${maleImg}" style="width:140px;">
+      <img src="${femaleImg}" style="width:140px;">
     </div>
 
-    <div class="reveal-name">${esc(name)}</div>
+    <div class="reveal-name">${esc(nameOverride)}</div>
 
     <div class="reveal-msg">
       ${
@@ -694,7 +701,7 @@ function showReveal(color, nameOverride){
       ${
         isGreen
         ? "De vikingen vieren jouw overwinning!"
-        : "De strijd eindigt hier... maar morgen komt een nieuwe kans."
+        : "Morgen krijg je een nieuwe kans!"
       }
     </div>
 
@@ -703,7 +710,6 @@ function showReveal(color, nameOverride){
 
   document.body.appendChild(div);
 }
-
 // ---------- SPELERS ----------
 async function showManagePlayers(){
   render(`<div class="loading">Laden...</div>`);
