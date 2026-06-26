@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -120,12 +121,28 @@ th{color:var(--wood-dark);}
 .winner-box{background:linear-gradient(135deg,#fff8dc,#f3e6c8);border:2px solid var(--gold);border-radius:10px;padding:14px;margin:10px 0;text-align:center;}
 .loser-box{background:#fdf0ee;border:2px solid var(--red);border-radius:10px;padding:14px;margin:10px 0;text-align:center;}
 .trophy{font-size:32px;}
+/* Rood/groen onthulscherm — fullscreen */
+.reveal-screen{
+  position:fixed;inset:0;z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:30px;
+  animation:fadeInReveal .6s ease;
+}
+@keyframes fadeInReveal{from{opacity:0;transform:scale(.95);}to{opacity:1;transform:scale(1);}}
+.reveal-screen.green{background:radial-gradient(circle,#2d7a2d,#1a4d1a);}
+.reveal-screen.red{background:radial-gradient(circle,#8a2c20,#4d0f0a);}
+.reveal-name{font-family:Georgia,serif;font-size:52px;font-weight:bold;color:#fff;text-shadow:0 4px 12px rgba(0,0,0,.5);margin:16px 0;}
+.reveal-icon{font-size:90px;animation:bounceIn .5s .3s both;}
+@keyframes bounceIn{0%{transform:scale(0);}70%{transform:scale(1.15);}100%{transform:scale(1);}}
+.reveal-msg{font-size:22px;color:rgba(255,255,255,.9);margin-top:8px;}
+.reveal-sub{font-size:15px;color:rgba(255,255,255,.65);margin-top:6px;}
+.reveal-close{margin-top:32px;background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.4);color:#fff;font-size:16px;padding:10px 24px;border-radius:8px;cursor:pointer;}
 </style>
 </head>
 <body>
 <div id="app">
-  <h1><span class="rune">ᛗ</span> De Mol van het Vikingkamp <span class="rune">ᛗ</span></h1>
-  <div class="subtitle">— wie verraadt het Viking volk? —</div>
+  <h1><span class="rune">ᛗ</span> Wie is de Mol van het Vikingkamp <span class="rune">ᛗ</span></h1>
+  <div class="subtitle">— Wie verraadt het Viking volk? —</div>
   <div id="content"><div class="loading">Het noodlot wordt geraadpleegd...</div></div>
 </div>
 <script>
@@ -230,7 +247,7 @@ async function showStart(){
       <h2>Welkom, Viking</h2>
       <p>Ben je een dappere strijder die de test gaat doen, of de wijze stamhoofdster/stamhoofd die alles regelt?</p>
       <button class="full" onclick="showPlayerLogin()">Ik ben speler</button>
-      <button class="full secondary" onclick="showAdminLogin()">Ik ben organisator</button>
+      <button class="full secondary" onclick="showAdminLogin()">Ik ben een Super toffe Begeleiding</button>
     </div>
     <p class="center small" style="color:var(--parchment-dark)"><a href="#" onclick="showSetup();return false;" style="color:var(--gold-light)">database-koppeling wijzigen</a></p>
   `);
@@ -238,32 +255,56 @@ async function showStart(){
 
 // ---------- PLAYER LOGIN ----------
 async function showPlayerLogin(){
-  render(`<div class="loading">Spelers laden...</div>`);
-  const players = await getPlayers();
-  if(players.length===0){
-    render(`<div class="card center">
-      <p>Er zijn nog geen spelers toegevoegd door de organisatie. Vraag de organisator om dit eerst te doen.</p>
-      <button onclick="showStart()">&larr; Terug</button>
-    </div>`);
-    return;
-  }
-  const opts = players.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("");
   render(`
     <div class="card">
       <h2>Wie ben jij?</h2>
-      <label>Kies jouw naam</label>
-      <select id="playerSelect">${opts}</select>
+      <p>Typ jouw naam precies zoals die is opgegeven door de organisatie.</p>
+      <label>Jouw naam</label>
+      <input type="text" id="playerNameInput" placeholder="Voer je naam in..." autocomplete="off">
+      <div id="loginError" style="color:var(--red);font-size:13px;margin-top:6px;display:none;"></div>
       <button class="full" style="margin-top:14px" onclick="confirmPlayer()">Verder</button>
       <button class="secondary full" onclick="showStart()">&larr; Terug</button>
     </div>
   `);
+  // Enter-toets werkt ook
+  setTimeout(()=>{
+    const inp = document.getElementById("playerNameInput");
+    if(inp) inp.addEventListener("keydown", e=>{ if(e.key==="Enter") confirmPlayer(); });
+  }, 50);
 }
 
 async function confirmPlayer(){
+  const input = document.getElementById("playerNameInput").value.trim();
+  if(!input){
+    document.getElementById("loginError").textContent = "Vul je naam in.";
+    document.getElementById("loginError").style.display = "block";
+    return;
+  }
+  render(`<div class="loading">Naam controleren...</div>`);
   const players = await getPlayers();
-  const id = document.getElementById("playerSelect").value;
-  me = players.find(p=>p.id===id);
-  render(`<div class="loading">Gegevens laden...</div>`);
+  // Hoofdletterongevoelige vergelijking zodat "menno" en "Menno" beide werken
+  const found = players.find(p => p.name.trim().toLowerCase() === input.toLowerCase());
+  if(!found){
+    render(`
+      <div class="card">
+        <h2>Wie ben jij?</h2>
+        <p>Typ jouw naam precies zoals die is opgegeven door de organisatie.</p>
+        <label>Jouw naam</label>
+        <input type="text" id="playerNameInput" value="${esc(input)}" autocomplete="off">
+        <div style="color:var(--red);font-size:13px;margin-top:6px;">
+          ❌ De naam <strong>${esc(input)}</strong> is niet gevonden. Controleer de spelling en probeer opnieuw.
+        </div>
+        <button class="full" style="margin-top:14px" onclick="confirmPlayer()">Verder</button>
+        <button class="secondary full" onclick="showStart()">&larr; Terug</button>
+      </div>
+    `);
+    setTimeout(()=>{
+      const inp = document.getElementById("playerNameInput");
+      if(inp){ inp.focus(); inp.addEventListener("keydown", e=>{ if(e.key==="Enter") confirmPlayer(); }); }
+    }, 50);
+    return;
+  }
+  me = found;
   const profile = await getProfile(me.id);
   if(!profile || !profile.completed){
     showProfileIntake(profile || {});
@@ -276,7 +317,7 @@ async function confirmPlayer(){
 function showProfileIntake(existingProfile){
   let html = `
     <div class="card">
-      <h2>Welkom bij de Mol, ${esc(me.name)}!</h2>
+      <h2>Welkom bij Wie is de Mol, ${esc(me.name)}!</h2>
       <p>Voordat je begint, vul je eerst jouw <strong>mollicitatie</strong> in. Jouw antwoorden worden gebruikt om vragen over jou te maken voor de andere spelers. Niemand anders ziet jouw antwoorden — alleen de organisatie. Je mag een vraag leeg laten als je dat liever hebt.</p>
     </div>
     <div class="card">
@@ -351,7 +392,7 @@ async function startQuiz(dayNum){
   const dayQs = (day.dayQuestions||[]);
   const allQs = [...bankQs, ...dayQs].map(q=>({...q}));
   if(allQs.length===0){
-    render(`<div class="card center"><p>Deze dag heeft nog geen vragen. Vraag de organisator.</p><button onclick="showPlayerHome()">Terug</button></div>`);
+    render(`<div class="card center"><p>Deze dag heeft nog geen vragen. Vraag de Super toffe Begeleiding om deze in te vullen.</p><button onclick="showPlayerHome()">Terug</button></div>`);
     return;
   }
   quizState = {
@@ -519,7 +560,7 @@ async function renderScoreboard(targetId, showDayResults){
 async function showAdminLogin(){
   render(`
     <div class="card center">
-      <h2>Organisator</h2>
+      <h2>Super toffe Begeleiding</h2>
       <label>Voer de geheime PIN in</label>
       <input type="password" id="pinInput" placeholder="PIN">
       <button class="full" style="margin-top:14px" onclick="checkPin()">Inloggen</button>
@@ -535,7 +576,7 @@ function checkPin(){
 
 async function showAdminHome(){
   render(`
-    ${topbar("Organisator", "showStart")}
+    ${topbar("Super toffe Begeleiding", "showStart")}
     <div class="card">
       <h2>Beheer</h2>
       <button class="full" onclick="showManagePlayers()">👥 Spelers beheren</button>
@@ -544,8 +585,75 @@ async function showAdminHome(){
       <button class="full" onclick="showManageBank()">📚 Vragenbank (handmatig)</button>
       <button class="full" onclick="showManageDays()">📅 Dagen instellen (Mol + vragen)</button>
       <button class="full" onclick="showAdminScoreboard()">🏆 Scorebord & uitslag</button>
+      <button class="full" style="background:linear-gradient(180deg,#4a9e4a,#2d6e2d);color:#fff;border-color:#1a4d1a;" onclick="showRevealScreen()">🟢🔴 Rood/Groen onthulscherm</button>
     </div>
   `);
+}
+
+// ---------- ROOD / GROEN ONTHULSCHERM ----------
+async function showRevealScreen(){
+  const players = await getPlayers();
+  const opts = players.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("");
+  render(`
+    ${topbar("Onthulscherm", "showAdminHome")}
+    <div class="card">
+      <h2>🟢🔴 Rood / Groen scherm</h2>
+      <p>Kies een speler en toon een groot groen of rood scherm op de beamer of telefoon. Gebruik dit aan het einde van de dag voor de dramatische onthulling.</p>
+      <label>Kies speler</label>
+      <select id="revealPlayerSelect">${opts}</select>
+      <div class="row" style="margin-top:16px;">
+        <button style="background:linear-gradient(180deg,#4db34d,#2d7a2d);color:#fff;border-color:#1a4d1a;flex:1;" onclick="showReveal('green')">🟢 GROEN — veilig!</button>
+        <button style="background:linear-gradient(180deg,#c97050,var(--red));color:#fff8ec;flex:1;" onclick="showReveal('red')">🔴 ROOD — afgevallen!</button>
+      </div>
+      <p class="small" style="margin-top:12px;">Tip: zet je scherm op volledig scherm (F11 of schermvergrotingsknop) voor het meeste effect.</p>
+    </div>
+  `);
+}
+async function checkPlayerResult(){
+  const input = document.getElementById("revealNameInput").value.trim().toLowerCase();
+  if(!input){
+    alert("Voer een naam in.");
+    return;
+  }
+
+  const players = await getPlayers();
+  const player = players.find(p => p.name.toLowerCase() === input);
+
+  if(!player){
+    alert("Speler niet gevonden.");
+    return;
+  }
+
+  // neem laatste dag
+  const d = DAYS[DAYS.length - 1];
+  const result = await computeDayResults(d);
+
+  if(!result){
+    alert("Nog geen uitslag beschikbaar.");
+    return;
+  }
+
+  if(player.id === result.loser.id){
+    showReveal("red", player.name);
+  } else {
+    showReveal("green", player.name);
+  }
+}
+  
+function showReveal(color){
+  const sel = document.getElementById("revealPlayerSelect");
+  const name = sel.options[sel.selectedIndex].text;
+  const isGreen = color === "green";
+  const div = document.createElement("div");
+  div.className = "reveal-screen " + color;
+  div.innerHTML = `
+    <div class="reveal-icon">${isGreen ? "✅" : "❌"}</div>
+    <div class="reveal-name">${esc(name)}</div>
+    <div class="reveal-msg">${isGreen ? "🛡️ Jij hebt voldoende vragen goed weten te beantwoorden, gefeliciteerd!" : "Je hebt helaas de minste vragen over de Mol goed, probeer het morgen nog een keer!"}</div>
+    <div class="reveal-sub">${isGreen ? "Je mag blijven strijden voor het Vikingkamp!" : "De stam heeft gesproken. Tot ziens, Viking."}</div>
+    <button class="reveal-close" onclick="this.parentElement.remove()">✕ Sluiten</button>
+  `;
+  document.body.appendChild(div);
 }
 
 // ---------- SPELERS ----------
@@ -830,7 +938,7 @@ async function showManageDay(d){
     </div>
     <div class="card">
       <h2>Wie is de Mol op dag ${d}?</h2>
-      <p class="small">Geheim! Alleen jij als organisator ziet dit.</p>
+      <p class="small">Geheim! Alleen jij als Super toffe Begeleiding ziet dit.</p>
       <select id="molSelect">${playerOpts}</select>
       <button style="margin-top:8px" onclick="saveMol(${d})">Mol opslaan</button>
     </div>
