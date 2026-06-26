@@ -640,19 +640,37 @@ async function checkPlayerResult(){
   }
 }
   
-function showReveal(color){
-  const sel = document.getElementById("revealPlayerSelect");
-  const name = sel.options[sel.selectedIndex].text;
+function showReveal(color, nameOverride){
+  let name = nameOverride;
+
+  if(!name){
+    const sel = document.getElementById("revealPlayerSelect");
+    name = sel.options[sel.selectedIndex].text;
+  }
+
   const isGreen = color === "green";
+
   const div = document.createElement("div");
   div.className = "reveal-screen " + color;
+
   div.innerHTML = `
-    <div class="reveal-icon">${isGreen ? "✅" : "❌"}</div>
+    <div style="font-size:100px;margin-bottom:10px;">
+      ${isGreen ? "🧔⚔️😃" : "🧔⚔️😭"}
+    </div>
+
     <div class="reveal-name">${esc(name)}</div>
-    <div class="reveal-msg">${isGreen ? "🛡️ Jij hebt voldoende vragen goed weten te beantwoorden, gefeliciteerd!" : "Je hebt helaas de minste vragen over de Mol goed, probeer het morgen nog een keer!"}</div>
-    <div class="reveal-sub">${isGreen ? "Je mag blijven strijden voor het Vikingkamp!" : "De stam heeft gesproken. Tot ziens, Viking."}</div>
+
+    <div class="reveal-msg">
+      ${isGreen ? "🛡️ Jij bent door!" : "Je hebt helaas de minste vragen over de Mol goed, probeer het morgen nog een keer!"}
+    </div>
+
+    <div class="reveal-sub">
+      ${isGreen ? "De Viking strijd gaat verder!" : "Morgen een nieuwe kans!"}
+    </div>
+
     <button class="reveal-close" onclick="this.parentElement.remove()">✕ Sluiten</button>
   `;
+
   document.body.appendChild(div);
 }
 
