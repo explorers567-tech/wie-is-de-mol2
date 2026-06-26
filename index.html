@@ -1,14 +1,3 @@
-const VIKINGS = {
-  green: {
-    male: "https://i.imgur.com/8Km9tLL.png",
-    female: "https://i.imgur.com/2RXYdN8.png"
-  },
-  red: {
-    male: "https://i.imgur.com/3sKXH3T.png",
-    female: "https://i.imgur.com/jK9nE7G.png"
-  }
-};
-``
 <!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -170,6 +159,17 @@ th{color:var(--wood-dark);}
 </div>
 <script>
 const PIN = "1066";
+
+const VIKINGS = {
+  green: {
+    male: "https://i.imgur.com/8Km9tLL.png",
+    female: "https://i.imgur.com/2RXYdN8.png"
+  },
+  red: {
+    male: "https://i.imgur.com/3sKXH3T.png",
+    female: "https://i.imgur.com/jK9nE7G.png"
+  }
+};
 const POINTS_PER_Q = 10;
 const DAYS = [1,2,3,4,5,6];
 let me = null;
@@ -629,6 +629,7 @@ async function showRevealScreen(){
     </div>
   `);
 }
+
 async function checkPlayerResult(){
   const input = document.getElementById("revealNameInput").value.trim().toLowerCase();
   if(!input){
@@ -644,7 +645,6 @@ async function checkPlayerResult(){
     return;
   }
 
-  // ✅ automatisch laatste afgesloten dag zoeken
   let d = null;
   for(let i = DAYS.length - 1; i >= 0; i--){
     const day = await getDay(DAYS[i]);
@@ -672,6 +672,7 @@ async function checkPlayerResult(){
     showReveal("green", player.name);
   }
 }
+  
 function showReveal(color, nameOverride){
   const isGreen = color === "green";
 
