@@ -17,13 +17,13 @@
   --green:#3a5a30;
   --ink:#2a1f14;
   --shadow:rgba(0,0,0,.35);
-.reveal-screen img{
-  box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+}
+.reveal-screen svg{
+  filter: drop-shadow(0 6px 16px rgba(0,0,0,0.5));
   transition: transform 0.2s;
 }
-
-.reveal-screen img:hover{
-  transform: scale(1.08);
+.reveal-screen svg:hover{
+  transform: scale(1.08) translateY(-4px);
 }
 *{box-sizing:border-box;}
 body{
@@ -142,8 +142,7 @@ th{color:var(--wood-dark);}
 .reveal-screen.red{
   background: radial-gradient(circle,#b33a2f,#3d0f0a);
 }
-``
-/* .reveal-name{font-family:Georgia,serif;font-size:52px;font-weight:bold;color:#fff;text-shadow:0 4px 12px rgba(0,0,0,.5);margin:16px 0;} */
+.reveal-name{font-family:Georgia,serif;font-size:52px;font-weight:bold;color:#fff;text-shadow:0 4px 12px rgba(0,0,0,.5);margin:16px 0;}
 .reveal-icon{font-size:90px;animation:bounceIn .5s .3s both;}
 @keyframes bounceIn{0%{transform:scale(0);}70%{transform:scale(1.15);}100%{transform:scale(1);}}
 .reveal-msg{font-size:22px;color:rgba(255,255,255,.9);margin-top:8px;}
@@ -161,16 +160,71 @@ th{color:var(--wood-dark);}
 const PIN = "1066";
 
 
-const VIKINGS = {
-  green: {
-    male: "https://cdn-icons-png.flaticon.com/512/4140/4140047.png",
-    female: "https://cdn-icons-png.flaticon.com/512/4140/4140048.png"
-  },
-  red: {
-    male: "https://cdn-icons-png.flaticon.com/512/4140/4140037.png",
-    female: "https://cdn-icons-png.flaticon.com/512/4140/4140038.png"
-  }
-};
+// ---------- ANIME-VIKING ILLUSTRATIES (zelf getekend in SVG) ----------
+// Een stoere mannen-Viking en een leuke dames-Viking, in chibi/anime-stijl.
+// mood "green" = blij (door naar volgende dag), "red" = verdrietig (afvaller van de dag)
+function vikingManSVG(mood){
+  const happy = mood !== "red";
+  return `
+  <svg width="140" height="180" viewBox="0 0 150 190" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="75" cy="152" rx="40" ry="32" fill="#6b4226" stroke="#2b1d12" stroke-width="3"/>
+    <path d="M38 128 Q75 108 112 128 L110 172 Q75 188 40 172 Z" fill="#8a5a2f" stroke="#2b1d12" stroke-width="3"/>
+    <circle cx="60" cy="150" r="7" fill="#e8b94d" stroke="#2b1d12" stroke-width="2"/>
+    <circle cx="90" cy="150" r="7" fill="#e8b94d" stroke="#2b1d12" stroke-width="2"/>
+    <circle cx="75" cy="80" r="46" fill="#f1c27d" stroke="#2b1d12" stroke-width="3"/>
+    <path d="M33 88 Q36 142 75 147 Q114 142 117 88 Q110 118 75 123 Q40 118 33 88 Z" fill="#a85c2e" stroke="#2b1d12" stroke-width="3"/>
+    <path d="M27 66 Q75 12 123 66 L118 50 Q75 22 32 50 Z" fill="#9aa5ad" stroke="#2b1d12" stroke-width="3"/>
+    <path d="M30 54 Q75 28 120 54 L120 64 Q75 40 30 64 Z" fill="#c7d0d6" stroke="#2b1d12" stroke-width="2"/>
+    <path d="M31 58 Q6 42 11 14 Q30 28 40 52 Z" fill="#f3ecdf" stroke="#2b1d12" stroke-width="3"/>
+    <path d="M119 58 Q144 42 139 14 Q120 28 110 52 Z" fill="#f3ecdf" stroke="#2b1d12" stroke-width="3"/>
+    <path d="M50 68 Q58 60 68 65" stroke="#a85c2e" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M82 65 Q92 60 100 68" stroke="#a85c2e" stroke-width="5" fill="none" stroke-linecap="round"/>
+    ${happy ? `
+      <path d="M54 80 Q62 72 70 80" stroke="#2b1d12" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M80 80 Q88 72 96 80" stroke="#2b1d12" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M63 100 Q75 111 87 100" stroke="#2b1d12" stroke-width="4" fill="none" stroke-linecap="round"/>
+    ` : `
+      <ellipse cx="61" cy="82" rx="6" ry="7" fill="#3a2a1a"/>
+      <ellipse cx="89" cy="82" rx="6" ry="7" fill="#3a2a1a"/>
+      <path d="M96 92 Q100 100 96 108" stroke="#7fc4ef" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M63 108 Q75 100 87 108" stroke="#2b1d12" stroke-width="4" fill="none" stroke-linecap="round"/>
+    `}
+  </svg>`;
+}
+function vikingVrouwSVG(mood){
+  const happy = mood !== "red";
+  return `
+  <svg width="120" height="180" viewBox="0 0 150 190" xmlns="http://www.w3.org/2000/svg">
+    <path d="M40 122 Q75 105 110 122 L118 175 Q75 190 32 175 Z" fill="#8a2c48" stroke="#2b1d12" stroke-width="3"/>
+    <path d="M40 122 Q75 105 110 122 L106 138 Q75 150 44 138 Z" fill="#c9962c" stroke="#2b1d12" stroke-width="2"/>
+    <path d="M18 96 Q10 130 24 158" stroke="#a85c2e" stroke-width="14" fill="none" stroke-linecap="round"/>
+    <path d="M132 96 Q140 130 126 158" stroke="#a85c2e" stroke-width="14" fill="none" stroke-linecap="round"/>
+    <circle cx="75" cy="80" r="45" fill="#f8d3a3" stroke="#2b1d12" stroke-width="3"/>
+    <ellipse cx="53" cy="94" rx="8" ry="5" fill="#f2a3a3" opacity="0.8"/>
+    <ellipse cx="97" cy="94" rx="8" ry="5" fill="#f2a3a3" opacity="0.8"/>
+    <path d="M29 64 Q75 18 121 64 L116 46 Q75 26 34 46 Z" fill="#c98f2c" stroke="#2b1d12" stroke-width="3"/>
+    <path d="M32 52 Q75 32 118 52 L118 60 Q75 44 32 60 Z" fill="#e8b94d" stroke="#2b1d12" stroke-width="2"/>
+    <path d="M33 56 Q14 42 18 20 Q33 32 41 50 Z" fill="#fff8ec" stroke="#2b1d12" stroke-width="3"/>
+    <path d="M117 56 Q136 42 132 20 Q117 32 109 50 Z" fill="#fff8ec" stroke="#2b1d12" stroke-width="3"/>
+    <circle cx="75" cy="30" r="7" fill="#e8618c" stroke="#2b1d12" stroke-width="2"/>
+    ${happy ? `
+      <circle cx="60" cy="80" r="9" fill="#3a2a1a"/>
+      <circle cx="90" cy="80" r="9" fill="#3a2a1a"/>
+      <circle cx="57" cy="77" r="2.5" fill="#fff"/>
+      <circle cx="87" cy="77" r="2.5" fill="#fff"/>
+      <path d="M64 102 Q75 110 86 102" stroke="#2b1d12" stroke-width="3" fill="none" stroke-linecap="round"/>
+    ` : `
+      <path d="M52 78 Q60 72 68 78" stroke="#2b1d12" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M82 78 Q90 72 98 78" stroke="#2b1d12" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M52 90 Q52 100 47 105" stroke="#7fc4ef" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M92 90 Q92 100 97 105" stroke="#7fc4ef" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <ellipse cx="75" cy="106" rx="7" ry="5" fill="#8a2c20"/>
+    `}
+  </svg>`;
+}
+function vikingCoupleSVG(mood){
+  return vikingManSVG(mood) + vikingVrouwSVG(mood);
+}
 
 const POINTS_PER_Q = 10;
 const DAYS = [1,2,3,4,5,6];
@@ -283,7 +337,7 @@ async function showPlayerLogin(){
   render(`
     <div class="card">
       <h2>Wie ben jij?</h2>
-      <p>Typ jouw naam precies zoals die is opgegeven door de organisatie.</p>
+      <p>Typ hier gewoon jouw eigen naam in. Is dit de eerste keer dat je meedoet? Dan word je automatisch aangemeld!</p>
       <label>Jouw naam</label>
       <input type="text" id="playerNameInput" placeholder="Voer je naam in..." autocomplete="off">
       <div id="loginError" style="color:var(--red);font-size:13px;margin-top:6px;display:none;"></div>
@@ -309,27 +363,46 @@ async function confirmPlayer(){
   const players = await getPlayers();
   // Hoofdletterongevoelige vergelijking zodat "menno" en "Menno" beide werken
   const found = players.find(p => p.name.trim().toLowerCase() === input.toLowerCase());
-  if(!found){
-    render(`
-      <div class="card">
-        <h2>Wie ben jij?</h2>
-        <p>Typ jouw naam precies zoals die is opgegeven door de organisatie.</p>
-        <label>Jouw naam</label>
-        <input type="text" id="playerNameInput" value="${esc(input)}" autocomplete="off">
-        <div style="color:var(--red);font-size:13px;margin-top:6px;">
-          ❌ De naam <strong>${esc(input)}</strong> is niet gevonden. Controleer de spelling en probeer opnieuw.
-        </div>
-        <button class="full" style="margin-top:14px" onclick="confirmPlayer()">Verder</button>
-        <button class="secondary full" onclick="showStart()">&larr; Terug</button>
-      </div>
-    `);
-    setTimeout(()=>{
-      const inp = document.getElementById("playerNameInput");
-      if(inp){ inp.focus(); inp.addEventListener("keydown", e=>{ if(e.key==="Enter") confirmPlayer(); }); }
-    }, 50);
+  if(found){
+    me = found;
+    const profile = await getProfile(me.id);
+    if(!profile || !profile.completed){
+      showProfileIntake(profile || {});
+    } else {
+      showPlayerHome();
+    }
     return;
   }
-  me = found;
+  // Naam nog niet bekend: vraag om bevestiging en meld de speler dan zelf aan.
+  render(`
+    <div class="card">
+      <h2>Nieuw hier?</h2>
+      <p>We kennen de naam <strong>${esc(input)}</strong> nog niet. Klopt de spelling? Dan word je hiermee aangemeld als nieuwe Viking-strijder.</p>
+      <div class="row">
+        <button onclick="createAndLoginPlayer('${esc(input).replace(/'/g,"\\'")}')">✓ Ja, dit ben ik — meld mij aan</button>
+        <button class="secondary" onclick="showPlayerLogin()">Nee, ik typ het opnieuw</button>
+      </div>
+    </div>
+  `);
+}
+
+async function createAndLoginPlayer(name){
+  render(`<div class="loading">Je wordt aangemeld...</div>`);
+  const players = await getPlayers();
+  // Dubbele check (voor het geval iemand tegelijk inlogt)
+  const existing = players.find(p => p.name.trim().toLowerCase() === name.toLowerCase());
+  if(existing){
+    me = existing;
+  } else {
+    const newPlayer = {id: uid(), name};
+    players.push(newPlayer);
+    const ok = await sSet("players", players);
+    if(!ok){
+      render(`<div class="card center"><p style="color:var(--red)">Aanmelden is helaas mislukt. Controleer de internetverbinding en probeer opnieuw.</p><button onclick="showPlayerLogin()">Terug</button></div>`);
+      return;
+    }
+    me = newPlayer;
+  }
   const profile = await getProfile(me.id);
   if(!profile || !profile.completed){
     showProfileIntake(profile || {});
@@ -620,16 +693,40 @@ async function showRevealScreen(){
   render(`
     ${topbar("Onthulscherm", "showAdminHome")}
     <div class="card">
-      <h2>🟢🔴 Rood / Groen scherm</h2>
+      <h2>🟢🔴 Uitslagronde</h2>
+      <p class="small">Kies hoe je de uitslag wilt onthullen aan de Vikingen.</p>
+      <div class="qlist-item">
+        <strong>Optie 1 — Naam intypen, automatische uitslag</strong>
+        <p class="small">Typ de naam van een speler in. Op basis van de testresultaten van de laatst afgesloten dag verschijnt automatisch een groen scherm (door naar volgende dag) of een rood scherm (minste vragen goed).</p>
+        <button class="full" onclick="showAutoRevealScreen()">Kies optie 1</button>
+      </div>
+      <div class="qlist-item">
+        <strong>Optie 2 — Zelf de verliezer aanwijzen</strong>
+        <p class="small">Jij als begeleiding kiest zelf welk kind het (voor de show) helaas het slechtst heeft gedaan. Er verschijnt dan alleen een rood scherm voor dat kind.</p>
+        <button class="full" onclick="showManualLoserScreen()">Kies optie 2</button>
+      </div>
+    </div>
+  `);
+}
 
+async function showAutoRevealScreen(){
+  render(`
+    ${topbar("Onthulscherm — Optie 1", "showRevealScreen")}
+    <div class="card">
+      <h2>🟢🔴 Automatische uitslag</h2>
+      <p class="small">Typ de naam van de speler in. Op basis van de laatst afgesloten dag wordt automatisch bepaald of het scherm rood of groen wordt.</p>
       <label>Naam speler</label>
       <input type="text" id="revealNameInput" placeholder="Bijv. Jan">
 
       <button class="full" style="margin-top:16px" onclick="checkPlayerResult()">
-        Controleer
+        Toon uitslag
       </button>
     </div>
   `);
+  setTimeout(()=>{
+    const inp = document.getElementById("revealNameInput");
+    if(inp) inp.addEventListener("keydown", e=>{ if(e.key==="Enter") checkPlayerResult(); });
+  }, 50);
 }
 
 async function checkPlayerResult(){
@@ -674,20 +771,39 @@ async function checkPlayerResult(){
     showReveal("green", player.name);
   }
 }
-  
+
+// ---------- OPTIE 2: BEGELEIDING WIJST ZELF DE VERLIEZER AAN ----------
+async function showManualLoserScreen(){
+  render(`<div class="loading">Spelers laden...</div>`);
+  const players = await getPlayers();
+  if(players.length===0){
+    render(`${topbar("Onthulscherm — Optie 2", "showRevealScreen")}<div class="card"><p class="small">Er zijn nog geen spelers toegevoegd.</p></div>`);
+    return;
+  }
+  const rows = players.map(p=>`
+    <button class="option-btn" onclick="showReveal('red','${esc(p.name).replace(/'/g,"\\'")}')">${esc(p.name)}</button>
+  `).join("");
+  render(`
+    ${topbar("Onthulscherm — Optie 2", "showRevealScreen")}
+    <div class="card">
+      <h2>🔴 Wijs de verliezer aan</h2>
+      <p class="small">Kies welk kind het rode scherm te zien krijgt. Er wordt niets automatisch berekend — jij bepaalt dit zelf.</p>
+      ${rows}
+    </div>
+  `);
+}
+
 function showReveal(color, nameOverride){
   const isGreen = color === "green";
 
-  const maleImg = VIKINGS[color].male;
-  const femaleImg = VIKINGS[color].female;
+  const vikingSvg = vikingCoupleSVG(color);
 
   const div = document.createElement("div");
   div.className = "reveal-screen " + color;
 
   div.innerHTML = `
-    <div style="display:flex;gap:20px;justify-content:center;margin-bottom:20px;">
-      <img src="${maleImg}" style="width:140px;">
-      <img src="${femaleImg}" style="width:140px;">
+    <div style="display:flex;gap:16px;justify-content:center;margin-bottom:10px;">
+      ${vikingSvg}
     </div>
 
     <div class="reveal-name">${esc(nameOverride)}</div>
@@ -734,6 +850,7 @@ async function showManagePlayers(){
     ${topbar("Spelers", "showAdminHome")}
     <div class="card">
       <h2>Spelers (${players.length})</h2>
+      <p class="small">Spelers melden zichzelf meestal aan door hun naam in te typen op het inlogscherm. Hier kun je spelers ook handmatig toevoegen of verwijderen.</p>
       ${rows}
       <label>Nieuwe speler toevoegen</label>
       <div class="row">
