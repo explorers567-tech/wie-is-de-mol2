@@ -701,8 +701,8 @@ async function showRevealScreen(){
         <button class="full" onclick="showAutoRevealScreen()">Kies optie 1</button>
       </div>
       <div class="qlist-item">
-        <strong>Optie 2 — Zelf de verliezer aanwijzen</strong>
-        <p class="small">Jij als begeleiding kiest zelf welk kind het (voor de show) helaas het slechtst heeft gedaan. Er verschijnt dan alleen een rood scherm voor dat kind.</p>
+        <strong>Optie 2 — Snelle versie</strong>
+        <p class="small">Geen naam intypen nodig: de site berekent zelf, op basis van de testresultaten, wie er die dag heeft verloren, en toont met één druk op de knop het rode scherm voor dat kind.</p>
         <button class="full" onclick="showManualLoserScreen()">Kies optie 2</button>
       </div>
     </div>
@@ -772,23 +772,46 @@ async function checkPlayerResult(){
   }
 }
 
-// ---------- OPTIE 2: BEGELEIDING WIJST ZELF DE VERLIEZER AAN ----------
+// ---------- OPTIE 2: SNELLE VERSIE — SITE BEREKENT ZELF WIE ER HEEFT VERLOREN ----------
 async function showManualLoserScreen(){
-  render(`<div class="loading">Spelers laden...</div>`);
-  const players = await getPlayers();
-  if(players.length===0){
-    render(`${topbar("Onthulscherm — Optie 2", "showRevealScreen")}<div class="card"><p class="small">Er zijn nog geen spelers toegevoegd.</p></div>`);
+  render(`<div class="loading">Uitslag berekenen...</div>`);
+
+  // Zoek de laatst afgesloten (bevestigde) dag
+  let d = null;
+  for(let i = DAYS.length - 1; i >= 0; i--){
+    const day = await getDay(DAYS[i]);
+    if(day.closed){
+      d = DAYS[i];
+      break;
+    }
+  }
+
+  if(!d){
+    render(`
+      ${topbar("Onthulscherm — Optie 2", "showRevealScreen")}
+      <div class="card"><p class="small">Er is nog geen dag afgesloten. Bevestig eerst de Mol-uitslag van een dag bij "Dagen instellen", dan kan de site berekenen wie er heeft verloren.</p></div>
+    `);
     return;
   }
-  const rows = players.map(p=>`
-    <button class="option-btn" onclick="showReveal('red','${esc(p.name).replace(/'/g,"\\'")}')">${esc(p.name)}</button>
-  `).join("");
+
+  const result = await computeDayResults(d);
+  if(!result){
+    render(`
+      ${topbar("Onthulscherm — Optie 2", "showRevealScreen")}
+      <div class="card"><p class="small">Voor dag ${d} zijn nog geen (geldige) inzendingen om een uitslag op te baseren.</p></div>
+    `);
+    return;
+  }
+
   render(`
     ${topbar("Onthulscherm — Optie 2", "showRevealScreen")}
-    <div class="card">
-      <h2>🔴 Wijs de verliezer aan</h2>
-      <p class="small">Kies welk kind het rode scherm te zien krijgt. Er wordt niets automatisch berekend — jij bepaalt dit zelf.</p>
-      ${rows}
+    <div class="card center">
+      <h2>🔴 Snelle uitslag — automatisch berekend</h2>
+      <p class="small">Op basis van de testresultaten van dag ${d} heeft de site berekend wie er verloren heeft:</p>
+      <p style="font-size:22px;color:var(--red)"><strong>${esc(result.loser.name)}</strong></p>
+      <p class="small">${result.loser.score} punten — ${(result.loser.time/1000).toFixed(1)}s</p>
+      <button class="full danger" onclick="showReveal('red','${esc(result.loser.name).replace(/'/g,"\\'")}')">Toon rood scherm</button>
+      <button class="secondary full" onclick="showManualLoserScreen()">↻ Opnieuw berekenen</button>
     </div>
   `);
 }
