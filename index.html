@@ -126,7 +126,7 @@ th{color:var(--wood-dark);}
 .axe-divider{text-align:center;color:var(--gold);margin:10px 0;letter-spacing:8px;}
 .winner-box{background:linear-gradient(135deg,#fff8dc,#f3e6c8);border:2px solid var(--gold);border-radius:10px;padding:14px;margin:10px 0;text-align:center;}
 .loser-box{background:#fdf0ee;border:2px solid var(--red);border-radius:10px;padding:14px;margin:10px 0;text-align:center;}
-.trophy{font-size:32px;}
+.trophy{display:flex;justify-content:center;}
 /* Rood/groen onthulscherm — fullscreen */
 .reveal-screen{
   position:fixed;inset:0;z-index:9999;
@@ -224,6 +224,10 @@ function vikingVrouwSVG(mood){
 }
 function vikingCoupleSVG(mood){
   return vikingManSVG(mood) + vikingVrouwSVG(mood);
+}
+// Kleine variant voor gebruik in kaartjes (bijv. dagwinnaar/dag-verliezer)
+function miniVikingSVG(svgFn, mood, w, h){
+  return svgFn(mood).replace(/width="\d+" height="\d+"/, `width="${w}" height="${h}"`);
 }
 
 const POINTS_PER_Q = 10;
@@ -1238,12 +1242,12 @@ async function renderDayResults(targetId){
       <div class="qlist-item">
         <strong>Dag ${d}</strong>
         <div class="winner-box" style="margin-top:8px">
-          <div class="trophy">🥇</div>
+          <div class="trophy">${miniVikingSVG(vikingVrouwSVG,"green",60,76)}</div>
           <strong>Dagwinnaar: ${esc(result.winner.name)}</strong><br>
           <span class="small">${result.winner.score} punten — ${(result.winner.time/1000).toFixed(1)}s</span>
         </div>
         <div class="loser-box">
-          <div class="trophy">💀</div>
+          <div class="trophy">${miniVikingSVG(vikingManSVG,"red",60,76)}</div>
           <strong>Dag-verliezer: ${esc(result.loser.name)}</strong><br>
           <span class="small">${result.loser.score} punten — ${(result.loser.time/1000).toFixed(1)}s</span>
         </div>
