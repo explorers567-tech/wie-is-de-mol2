@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -246,20 +245,20 @@ async function saveProfile(playerId, data){ return await sSet("profiles/"+player
 
 // ---------- MOLLICITATIE VRAGEN ----------
 const FIXED_QUESTIONS = [
-  {key:"eten",       label:"Favoriete eten",                              template:a=>`Wie houdt er het meest van ${a}?`},
+  {key:"eten",       label:"Favoriete eten",                              template:a=>`Wie houdt het meest van ${a}?`},
   {key:"muziek",     label:"Favoriete muziek / artiest",                  template:a=>`Wie luistert het meest naar ${a}?`},
   {key:"film",       label:"Favoriete film of serie",                     template:a=>`Van wie is dit de favoriete film of serie: ${a}?`},
   {key:"huisdier",   label:"Huisdieren",                                  template:a=>`Wie heeft dit huisdier (of deze huisdieren): ${a}?`},
   {key:"hobby",      label:"Hobby / vrije tijd",                          template:a=>`Wie doet dit het liefst in zijn of haar vrije tijd: ${a}?`},
   {key:"vak",        label:"Lievelingsvak op school",                     template:a=>`Wiens lievelingsvak op school is ${a}?`},
-  {key:"vakantie",   label:"Droomvakantiebestemming",                     template:a=>`Wie wil hier het allerliefst naartoe: ${a}?`},
+  {key:"vakantie",   label:"Droomvakantiebestemming",                     template:a=>`Wie wil het allerliefst naartoe: ${a}?`},
   {key:"bijnaam",    label:"Bijnaam",                                     template:a=>`Wiens bijnaam is dit: ${a}?`},
   {key:"minstvak",   label:"Minst favoriete vak",                        template:a=>`Wie heeft hier een hekel aan op school: ${a}?`},
   {key:"genant",     label:"Gênante situatie",                            template:a=>`Bij wie is dit ooit gebeurd: ${a}?`},
   {key:"jeugd",      label:"Jeugdherinnering",                            template:a=>`Van wie is dit een jeugdherinnering: ${a}?`},
-  {key:"superkracht",label:"Gekozen superkracht",                         template:a=>`Wie zou deze superkracht het liefst hebben: ${a}?`},
+  {key:"superkracht",label:"Gekozen superkracht",                         template:a=>`Wie zou deze superkracht kiezen: ${a}?`},
   {key:"goedin",     label:"Iets waar je stiekem goed in bent",           template:a=>`Wie is hier stiekem heel goed in: ${a}?`},
-  {key:"droom",      label:"Grootste droom of ambitie",                   template:a=>`Wiens grootste ambitie of droom is: ${a}?`},
+  {key:"droom",      label:"Grootste droom of ambitie",                   template:a=>`Wiens grote droom is dit: ${a}?`},
   {key:"gewoonte",   label:"Typische eigenaardigheid",                    template:a=>`Bij wie hoort deze gewoonte: ${a}?`},
   {key:"bang",       label:"Vroeger bang voor, nu niet meer",             template:a=>`Wie was hier vroeger bang voor: ${a}?`},
   {key:"trots",      label:"Waar het meest trots op",                     template:a=>`Wie is hier het meest trots op: ${a}?`},
@@ -622,6 +621,10 @@ async function showAdminLogin(){
       <button class="secondary full" onclick="showStart()">&larr; Terug</button>
     </div>
   `);
+  setTimeout(()=>{
+    const inp = document.getElementById("pinInput");
+    if(inp){ inp.focus(); inp.addEventListener("keydown", e=>{ if(e.key==="Enter") checkPin(); }); }
+  }, 50);
 }
 function checkPin(){
   const v = document.getElementById("pinInput").value;
@@ -817,6 +820,10 @@ async function showResetDatabase(){
       <button class="secondary full" onclick="showAdminHome()">Annuleer</button>
     </div>
   `);
+  setTimeout(()=>{
+    const inp = document.getElementById("resetConfirmInput");
+    if(inp) inp.addEventListener("keydown", e=>{ if(e.key==="Enter") confirmResetDatabase(); });
+  }, 50);
 }
 
 async function confirmResetDatabase(){
