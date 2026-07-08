@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -640,6 +641,214 @@ async function showAdminHome(){
       <button class="full" onclick="showManageDays()">📅 Dagen instellen (Mol + vragen)</button>
       <button class="full" onclick="showAdminScoreboard()">🏆 Scorebord & uitslag</button>
       <button class="full" style="background:linear-gradient(180deg,#4a9e4a,#2d6e2d);color:#fff;border-color:#1a4d1a;" onclick="showRevealScreen()">🟢🔴 Rood/Groen onthulscherm</button>
+    </div>
+    <div class="card">
+      <h2>🧪 Testomgeving</h2>
+      <p class="small">Handig om de app uit te proberen: dit vult de database met 15 voorbeeldspelers, ingevulde mollicitaties, vragen en alle 6 dagen — elke dag is al afgerond met een eigen (geheime) Mol en fictieve resultaten van alle spelers, zodat je meteen het volledige scorebord en onthulscherm kan testen.</p>
+      <button class="full secondary" onclick="showSeedTestData()">🧪 Testomgeving aanmaken</button>
+    </div>
+    <div class="card" style="border-color:var(--red);">
+      <h2 style="border-color:var(--red);color:#e08a72;">⚠️ Gevarenzone</h2>
+      <p class="small">Wil je met een nieuwe groep opnieuw beginnen? Reset hieronder de hele database in één keer.</p>
+      <button class="full danger" onclick="showResetDatabase()">🗑️ Database volledig resetten</button>
+    </div>
+  `);
+}
+
+// ---------- TESTOMGEVING AANMAKEN ----------
+const TEST_PLAYER_NAMES = [
+  "Sanne","Daan","Noor","Finn","Lotte","Bram","Julia","Sem",
+  "Fleur","Milan","Eva","Thijs","Roos","Sven","Iris"
+];
+const TEST_PROFILE_DATA = {
+  eten:      ["pizza","patat met mayo","spaghetti","sushi","pannenkoeken","frikandellen","broodje kroket","lasagne","tosti","poffertjes","kroketten","loempia's","stamppot","ravioli","taco's"],
+  muziek:    ["Metallica","Taylor Swift","Nederlandstalige hits","K3","Eminem","Billie Eilish","Frans Bauer","Rammstein","Ariana Grande","Kensington","Ed Sheeran","Snelle","Doja Cat","Guus Meeuwis","Imagine Dragons"],
+  film:      ["Harry Potter","Frozen","Star Wars","De Marvel-films","Camping Kids","Wickie de Viking","How to Train Your Dragon","Fast & Furious","Minions","Sonic the Hedgehog","De Efteling-film","Shrek","Jumanji","Paw Patrol de film","Kung Fu Panda"],
+  huisdier:  ["een hond","twee katten","een konijn","geen huisdier","een hamster","kippen","een cavia","een papegaai","vissen","een cavia en een hond","een schildpad","twee honden","een rat","geen huisdier","een pony"],
+  hobby:     ["voetballen","tekenen","gamen","paardrijden","muziek maken","skaten","lezen","zwemmen","dansen","hockeyen","knutselen","turnen","fotograferen","judo","basketballen"],
+  vak:       ["gym","rekenen","tekenen","aardrijkskunde","biologie","muziek","geschiedenis","Engels","natuurkunde","handvaardigheid","Nederlands","scheikunde","wiskunde","drama","informatica"],
+  vakantie:  ["Zweden","Amerika","Bali","Frankrijk","Noorwegen","Spanje","IJsland","Griekenland","Japan","Canada","Portugal","Kroatië","Nieuw-Zeeland","Italië","Zuid-Afrika"],
+  bijnaam:   ["Sanneke","D-man","Noortje","Finnegan","Lot","Brammetje","Juul","Semmie","Fleurtje","Milantje","Eef","Thijsie","Roosje","Svenneke","Iriske"]
+};
+const TEST_DAY_GAMES = [
+  "het touwtrekken","de schatzoektocht","het boogschieten","de kanovaartocht",
+  "de estafetterace","het bijltje werpen","de vlaggenroof","het levende ganzenbord"
+];
+
+function showSeedTestData(){
+  render(`
+    ${topbar("Testomgeving aanmaken", "showAdminHome")}
+    <div class="card">
+      <h2>🧪 Weet je het zeker?</h2>
+      <p>Dit vult de database met:</p>
+      <ul class="small" style="line-height:1.7;">
+        <li>15 voorbeeldspelers met ingevulde mollicitaties</li>
+        <li>Een vragenbank op basis van hun antwoorden</li>
+        <li><strong>Alle 6 dagen</strong>: elk afgerond, met een eigen (geheime) Mol en ingeleverde testresultaten van alle 15 spelers — ideaal om scorebord en onthulscherm meteen volledig te testen</li>
+      </ul>
+      <p class="small" style="color:#e08a72;">Let op: bestaande spelers, vragen en dagen worden hierbij overschreven.</p>
+      <button class="full" style="margin-top:10px" onclick="confirmSeedTestData()">🧪 Ja, testomgeving aanmaken</button>
+      <button class="secondary full" onclick="showAdminHome()">Annuleer</button>
+    </div>
+  `);
+}
+
+async function confirmSeedTestData(){
+  render(`<div class="loading">Testomgeving wordt aangemaakt (15 spelers, 6 dagen)...</div>`);
+
+  // 1) Spelers aanmaken
+  const players = TEST_PLAYER_NAMES.map(name => ({id: uid(), name}));
+  await sSet("players", players);
+
+  // 2) Mollicitatie-profielen invullen
+  const profiles = {};
+  players.forEach((p, i) => {
+    const profile = {completed: true};
+    Object.keys(TEST_PROFILE_DATA).forEach(key => {
+      profile[key] = TEST_PROFILE_DATA[key][i % TEST_PROFILE_DATA[key].length];
+    });
+    profiles[p.id] = profile;
+  });
+  await sSet("profiles", profiles);
+
+  // 3) Vragenbank genereren op basis van de mollicitatie-antwoorden
+  //    (twee vragen per categorie, met een andere speler als correct antwoord, voor meer variatie)
+  const bank = [];
+  const profileKeys = Object.keys(TEST_PROFILE_DATA);
+  profileKeys.forEach((key, i) => {
+    const fq = FIXED_QUESTIONS.find(f => f.key === key);
+    [i, i + 7].forEach(offset => {
+      const correctPlayer = players[offset % players.length];
+      const answerText = profiles[correctPlayer.id][key];
+      const others = players.filter(p => p.id !== correctPlayer.id);
+      const distractors = [...others].sort(() => Math.random() - 0.5).slice(0, 3);
+      const idsShuffled = [correctPlayer, ...distractors].sort(() => Math.random() - 0.5);
+      const options = idsShuffled.map(p => p.name);
+      const correctIndex = idsShuffled.findIndex(p => p.id === correctPlayer.id);
+      bank.push({id: uid()+"q", text: fq.template(answerText), options, correctIndex});
+    });
+  });
+  await sSet("bank", bank);
+  const bankIds = bank.map(q => q.id);
+
+  // 4) Dagvragen (over de "spellen van vandaag") — elke dag krijgt een eigen set
+  function makeDayQuestions(){
+    return TEST_DAY_GAMES.map(game => {
+      const shuffled = [...players].sort(() => Math.random() - 0.5).slice(0, 4);
+      const correctIndex = Math.floor(Math.random() * 4);
+      return {
+        text: `Wie heeft vanmorgen ${game} gewonnen?`,
+        options: shuffled.map(p => p.name),
+        correctIndex
+      };
+    });
+  }
+
+  // 5) Elke dag opbouwen: eigen Mol, eigen dagvragen, én gesimuleerde resultaten van alle 15 spelers
+  const molNames = [];
+  for(const d of DAYS){
+    const dayQuestions = makeDayQuestions();
+    const molPlayer = players[(d - 1) % players.length];
+    molNames.push(`Dag ${d}: ${molPlayer.name}`);
+
+    const dayObj = {
+      questionIds: bankIds,
+      dayQuestions,
+      molId: molPlayer.id,
+      open: true,
+      votingOpen: false,
+      closed: true
+    };
+    await setDay(d, dayObj);
+
+    const allQsDay = [...bank, ...dayQuestions];
+    const answers = {};
+    players.forEach(p => {
+      const correctRatio = 0.4 + Math.random() * 0.5; // tussen 40% en 90% goed
+      const answerArr = allQsDay.map(q => {
+        if(Math.random() < correctRatio) return q.correctIndex;
+        let wrong = Math.floor(Math.random() * 4);
+        if(wrong === q.correctIndex) wrong = (wrong + 1) % 4;
+        return wrong;
+      });
+      const correct = answerArr.filter((a,i) => a === allQsDay[i].correctIndex).length;
+      const times = allQsDay.map(() => 3000 + Math.floor(Math.random()*9000));
+      const totalTimeMs = times.reduce((a,b)=>a+b, 0);
+      const others = players.filter(o => o.id !== p.id);
+      const molGuess = others[Math.floor(Math.random()*others.length)].id;
+      answers[p.id] = {
+        answers: answerArr, times, totalTimeMs,
+        correct, score: correct*POINTS_PER_Q,
+        molGuess, submitted: true, submittedAt: Date.now()
+      };
+    });
+    await sSet("answers/day_"+d, answers);
+  }
+
+  render(`
+    <div class="card center">
+      <h2>✅ Testomgeving klaar!</h2>
+      <p>Er zijn 15 spelers aangemaakt: <strong>${TEST_PLAYER_NAMES.join(", ")}</strong>.</p>
+      <p class="small">Alle 6 dagen zijn afgerond met resultaten van alle 15 spelers en een eigen geheime Mol per dag. Bekijk het scorebord of test het onthulscherm meteen op elke dag.</p>
+      <p class="small" style="color:var(--parchment-dark)">(Geheim, alleen voor jou als begeleiding: ${molNames.join(" — ")})</p>
+      <button class="full" onclick="showAdminHome()">Terug naar beheer</button>
+    </div>
+  `);
+}
+
+
+// ---------- DATABASE RESET ----------
+async function showResetDatabase(){
+  render(`
+    ${topbar("Database resetten", "showAdminHome")}
+    <div class="card" style="border-color:var(--red);">
+      <h2 style="border-color:var(--red);color:#e08a72;">⚠️ Weet je het zeker?</h2>
+      <p>Dit verwijdert <strong>alles</strong> uit de database, inclusief:</p>
+      <ul class="small" style="line-height:1.7;">
+        <li>Alle spelers</li>
+        <li>Alle mollicitatie-antwoorden</li>
+        <li>De hele vragenbank</li>
+        <li>Alle dag-instellingen (Mol, geopend/gesloten, dagvragen)</li>
+        <li>Alle ingeleverde testantwoorden en scores</li>
+      </ul>
+      <p class="small" style="color:#e08a72;">Dit kan niet ongedaan worden gemaakt! Typ hieronder <strong>RESET</strong> om te bevestigen.</p>
+      <input type="text" id="resetConfirmInput" placeholder="Typ RESET" autocomplete="off">
+      <button class="full danger" style="margin-top:14px" onclick="confirmResetDatabase()">🗑️ Ja, verwijder alles definitief</button>
+      <button class="secondary full" onclick="showAdminHome()">Annuleer</button>
+    </div>
+  `);
+}
+
+async function confirmResetDatabase(){
+  const input = document.getElementById("resetConfirmInput").value.trim();
+  if(input !== "RESET"){
+    alert('Typ precies "RESET" (hoofdletters) om te bevestigen.');
+    return;
+  }
+  render(`<div class="loading">Database wordt volledig geleegd...</div>`);
+  // Elke hoofdtak in de database expliciet naar null zetten, zodat er
+  // niets van spelers, antwoorden, dagen, profielen of de vragenbank achterblijft.
+  const branches = ["players", "bank", "days", "answers", "profiles"];
+  let allOk = true;
+  for(const branch of branches){
+    const ok = await sSet(branch, null);
+    if(!ok) allOk = false;
+  }
+  if(!allOk){
+    render(`
+      ${topbar("Database resetten", "showAdminHome")}
+      <div class="card" style="border-color:var(--red);">
+        <p style="color:#e08a72;">Er ging iets mis bij het resetten. Controleer de internetverbinding en de Firebase-regels, en probeer het opnieuw.</p>
+        <button class="full" onclick="showResetDatabase()">Opnieuw proberen</button>
+      </div>
+    `);
+    return;
+  }
+  render(`
+    <div class="card center">
+      <h2>✅ Database is leeg</h2>
+      <p>Alle spelers, antwoorden, dagen en vragen zijn verwijderd. Je kunt nu fris beginnen met een nieuwe groep.</p>
+      <button class="full" onclick="showAdminHome()">Terug naar beheer</button>
     </div>
   `);
 }
