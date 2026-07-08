@@ -245,24 +245,24 @@ async function saveProfile(playerId, data){ return await sSet("profiles/"+player
 
 // ---------- MOLLICITATIE VRAGEN ----------
 const FIXED_QUESTIONS = [
-  {key:"eten",       label:"Favoriete eten",                              template:a=>`Wie houdt het meest van ${a}?`},
-  {key:"muziek",     label:"Favoriete muziek / artiest",                  template:a=>`Wie luistert het meest naar ${a}?`},
-  {key:"film",       label:"Favoriete film of serie",                     template:a=>`Van wie is dit de favoriete film of serie: ${a}?`},
-  {key:"huisdier",   label:"Huisdieren",                                  template:a=>`Wie heeft dit huisdier (of deze huisdieren): ${a}?`},
-  {key:"hobby",      label:"Hobby / vrije tijd",                          template:a=>`Wie doet dit het liefst in zijn of haar vrije tijd: ${a}?`},
-  {key:"vak",        label:"Lievelingsvak op school",                     template:a=>`Wiens lievelingsvak op school is ${a}?`},
-  {key:"vakantie",   label:"Droomvakantiebestemming",                     template:a=>`Wie wil het allerliefst naartoe: ${a}?`},
-  {key:"bijnaam",    label:"Bijnaam",                                     template:a=>`Wiens bijnaam is dit: ${a}?`},
-  {key:"minstvak",   label:"Minst favoriete vak",                        template:a=>`Wie heeft hier een hekel aan op school: ${a}?`},
-  {key:"genant",     label:"Gênante situatie",                            template:a=>`Bij wie is dit ooit gebeurd: ${a}?`},
-  {key:"jeugd",      label:"Jeugdherinnering",                            template:a=>`Van wie is dit een jeugdherinnering: ${a}?`},
-  {key:"superkracht",label:"Gekozen superkracht",                         template:a=>`Wie zou deze superkracht kiezen: ${a}?`},
-  {key:"goedin",     label:"Iets waar je stiekem goed in bent",           template:a=>`Wie is hier stiekem heel goed in: ${a}?`},
-  {key:"droom",      label:"Grootste droom of ambitie",                   template:a=>`Wiens grote droom is dit: ${a}?`},
-  {key:"gewoonte",   label:"Typische eigenaardigheid",                    template:a=>`Bij wie hoort deze gewoonte: ${a}?`},
-  {key:"bang",       label:"Vroeger bang voor, nu niet meer",             template:a=>`Wie was hier vroeger bang voor: ${a}?`},
-  {key:"trots",      label:"Waar het meest trots op",                     template:a=>`Wie is hier het meest trots op: ${a}?`},
-  {key:"onzichtbaar",label:"Wat zou je doen als je 1 dag onzichtbaar was",template:a=>`Wie zou dit doen als hij of zij onzichtbaar was: ${a}?`}
+  {key:"eten",       label:"Wat je jouw favoriete eten",                           template:a=>`Van welk voedsel houdt onze dag Mol het meest: ${a}?`},
+  {key:"muziek",     label:"Wat je jouw favoriete muziek / artiest",               template:a=>`Naar welke muziek luistert onze dag Mol graag: ${a}?`},
+  {key:"film",       label:"Wat je jouw favoriete film of serie",                  template:a=>`Wat is de favoriete film of serie van onze dag Mol: ${a}?`},
+  {key:"huisdier",   label:"Welke huisdieren heb jij",                             template:a=>`Welk huisdier (of huisdieren) heeft onze dag Mol: ${a}?`},
+  {key:"hobby",      label:"Wat je jouw hobby naast scouting",                     template:a=>`Wat doet onze dag Mol het liefst in zijn of haar vrije tijd: ${a}?`},
+  {key:"vak",        label:"Wat je jouw lievelingsvak op school",                  template:a=>`Wat is het lievelingsvak van onze dag Mol op school: ${a}?`},
+  {key:"vakantie",   label:"Wat je jouw droomvakantiebestemming",                  template:a=>`Waar wil onze dag Mol het allerliefst naartoe: ${a}?`},
+  {key:"bijnaam",    label:"Wat je jouw bijnaam",                                  template:a=>`Welke bijnaam heeft onze dag Mol: ${a}?`},
+  {key:"minstvak",   label:"Wat je jouw minst favoriete vak",                      template:a=>`Waar heeft onze dag Mol een hekel aan op school: ${a}?`},
+  {key:"genant",     label:"Welke gênante situatie heb je meegemaakt",             template:a=>`Wat is er bij onze dag Mol ooit gebeurd: ${a}?`},
+  {key:"jeugd",      label:"Welke jeugdherinnering heb jij",                       template:a=>`Welke jeugdherinnering is onze dag Mol: ${a}?`},
+  {key:"superkracht",label:"Welke superkracht zou je graag willen",                template:a=>`Welke superkracht zou onze dag Mol kiezen: ${a}?`},
+  {key:"goedin",     label:"Waar ben je stiekem goed in",                          template:a=>`Waar is onze dag Mol stiekem heel goed in: ${a}?`},
+  {key:"droom",      label:"Wat je jouw grootste droom of ambitie",                template:a=>`Wat is onze dag Mol zijn of haar grote droom: ${a}?`},
+  {key:"gewoonte",   label:"Welke typische eigenaardigheid heb jij",               template:a=>`Welke gewoonte heeft onze dag Mol: ${a}?`},
+  {key:"bang",       label:"Waar was je vroeger bang voor, maar nu niet meer",     template:a=>`Waar was onze dag Mol vroeger bang voor: ${a}?`},
+  {key:"trots",      label:"Waar ben je het meest trots op",                       template:a=>`Waar is onze dag Mol het meest trots op: ${a}?`},
+  {key:"onzichtbaar",label:"Wat zou je doen als je 1 dag onzichtbaar was",         template:a=>`Wat zou onze dag Mol doen als hij of zij onzichtbaar was: ${a}?`}
 ];
 
 function render(html){ document.getElementById("content").innerHTML = html; }
