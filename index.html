@@ -240,7 +240,7 @@ async function getDay(n){
 async function setDay(n, val){ return await sSet("days/day_"+n, val); }
 async function getAnswer(day, playerId){ return await sGet("answers/day_"+day+"/"+playerId); }
 async function setAnswer(day, playerId, val){ return await sSet("answers/day_"+day+"/"+playerId, val); }
-async function getProfile(playerId){ return (await sGet("profiles/"+playerId)) || {}; }
+async function getProfile(playerId){ return (await sGet("profiles/"+answers)) || {}; } // replace PayerId for answers
 async function saveProfile(playerId, data){ return await sSet("profiles/"+playerId, data); }
 
 // ---------- MOLLICITATIE VRAGEN ----------
