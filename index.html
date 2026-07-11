@@ -221,21 +221,40 @@ async function sSet(path, val){
 function uid(){ return "p" + Math.random().toString(36).slice(2,9); }
 function esc(s){ return (s||"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 
+function toArr(v){
+  if(!v) return [];
+  return Array.isArray(v) ? v.filter(Boolean) : Object.values(v).filter(Boolean);
+}
 async function getPlayers(){
   const d = await sGet("players");
-  if(!d) return [];
-  return Array.isArray(d) ? d.filter(Boolean) : Object.values(d);
+  return toArr(d);
 }
 async function getBank(){
   const d = await sGet("bank");
-  if(!d) return [];
-  return Array.isArray(d) ? d.filter(Boolean) : Object.values(d);
+  return toArr(d).map(q => ({
+    id: q.id,
+    text: q.text || "",
+    options: toArr(q.options),
+    correctIndex: (typeof q.correctIndex === "number") ? q.correctIndex : 0
+  }));
 }
 // FIX: getDay gebruikte eerder een getal als sleutel — Firebase slaat dit op als array-index.
 // Door de sleutel als string "day_N" op te slaan, werkt dag 1 correct.
+// Daarnaast normaliseren we questionIds/dayQuestions altijd naar een echte array: Firebase
+// geeft lijsten soms terug als object (bijv. na verwijderingen), en zonder deze fix liep
+// het laden van de test dan vast zonder foutmelding.
 async function getDay(n){
   const d = await sGet("days/day_"+n);
-  return d || {questionIds:[], dayQuestions:[], molId:null, open:false, votingOpen:false, closed:false};
+  if(!d) return {questionIds:[], dayQuestions:[], molId:null, open:false, votingOpen:false, closed:false};
+  return {
+    ...d,
+    questionIds: toArr(d.questionIds),
+    dayQuestions: toArr(d.dayQuestions).map(q => ({
+      text: (q && q.text) || "",
+      options: toArr(q && q.options),
+      correctIndex: (q && typeof q.correctIndex === "number") ? q.correctIndex : 0
+    }))
+  };
 }
 async function setDay(n, val){ return await sSet("days/day_"+n, val); }
 async function getAnswer(day, playerId){ return await sGet("answers/day_"+day+"/"+playerId); }
@@ -245,29 +264,24 @@ async function saveProfile(playerId, data){ return await sSet("profiles/"+player
 
 // ---------- MOLLICITATIE VRAGEN ----------
 const FIXED_QUESTIONS = [
-  {key:"eten",       label:"Wat is jouw favoriete eten",                           template:a=>`Van welk voedsel houdt onze dag Mol het meest: ${a}?`},
-  {key:"muziek",     label:"Wat is jouw favoriete muziek / artiest",               template:a=>`Naar welke muziek luistert onze dag Mol graag: ${a}?`},
-  {key:"film",       label:"Wat is jouw favoriete film of serie",                  template:a=>`Wat is de favoriete film of serie van onze dag Mol: ${a}?`},
-  {key:"huisdier",   label:"Welke huisdieren heb jij",                             template:a=>`Welk huisdier (of huisdieren) heeft onze dag Mol: ${a}?`},
-  {key:"hobby",      label:"Wat is jouw hobby naast scouting",                     template:a=>`Wat doet onze dag Mol het liefst in zijn of haar vrije tijd: ${a}?`},
-  {key:"vak",        label:"Wat is jouw lievelingsvak op school",                  template:a=>`Wat is het lievelingsvak van onze dag Mol op school: ${a}?`},
-  {key:"vakantie",   label:"Wat is jouw droomvakantiebestemming",                  template:a=>`Waar wil onze dag Mol het allerliefst naartoe: ${a}?`},
-  {key:"bijnaam",    label:"Wat is jouw bijnaam",                                  template:a=>`Welke bijnaam heeft onze dag Mol: ${a}?`},
-  {key:"minstvak",   label:"Wat is jouw minst favoriete vak",                      template:a=>`Waar heeft onze dag Mol een hekel aan op school: ${a}?`},
-  {key:"genant",     label:"Welke gênante situatie heb je meegemaakt",             template:a=>`Wat is er bij onze dag Mol ooit gebeurd: ${a}?`},
-  {key:"jeugd",      label:"Welke jeugdherinnering heb jij",                       template:a=>`Welke jeugdherinnering is onze dag Mol: ${a}?`},
-  {key:"superkracht",label:"Welke superkracht zou je graag willen",                template:a=>`Welke superkracht zou onze dag Mol kiezen: ${a}?`},
-  {key:"goedin",     label:"Waar ben je stiekem goed in",                          template:a=>`Waar is onze dag Mol stiekem heel goed in: ${a}?`},
-  {key:"droom",      label:"Wat is jouw grootste droom of ambitie",                template:a=>`Wat is onze dag Mol zijn of haar grote droom: ${a}?`},
-  {key:"gewoonte",   label:"Welke typische eigenaardigheid heb jij",               template:a=>`Welke gewoonte heeft onze dag Mol: ${a}?`},
-  {key:"bang",       label:"Waar was je vroeger bang voor, maar nu niet meer",     template:a=>`Waar was onze dag Mol vroeger bang voor: ${a}?`},
-  {key:"trots",      label:"Waar ben jij het meest trots op",                      template:a=>`Waar is onze dag Mol het meest trots op: ${a}?`},
-  {key:"Schoenmaat", label:"Welke schoonmaat heb je",                              template:a=>`Wat is de schoonmaat van de dag Mol: ${a}?`},
-  {key:"Lengte",     label:"Hoe lang ben je",                                      template:a=>`Hoe lang is onze dag Mol: ${a}?`},
-  {key:"Haarkleur",  label:"Wat is je haarkleur",                                  template:a=>`Welke haarkleur heeft onze dag Mol: ${a}?`},
-  {key:"Scouting",   label:"Hoe lang zit je al op scouting",                       template:a=>`Hoe lang zit onze dag Mol al op scouting: ${a}?`},
-  {key:"onzichtbaar",label:"Wat zou je doen als je 1 dag onzichtbaar was",         template:a=>`Wat zou onze dag Mol doen als hij of zij onzichtbaar was: ${a}?`}
-
+  {key:"eten",       label:"Favoriete eten",                              template:a=>`Wie houdt het meest van ${a}?`},
+  {key:"muziek",     label:"Favoriete muziek / artiest",                  template:a=>`Wie luistert het meest naar ${a}?`},
+  {key:"film",       label:"Favoriete film of serie",                     template:a=>`Van wie is dit de favoriete film of serie: ${a}?`},
+  {key:"huisdier",   label:"Huisdieren",                                  template:a=>`Wie heeft dit huisdier (of deze huisdieren): ${a}?`},
+  {key:"hobby",      label:"Hobby / vrije tijd",                          template:a=>`Wie doet dit het liefst in zijn of haar vrije tijd: ${a}?`},
+  {key:"vak",        label:"Lievelingsvak op school",                     template:a=>`Wiens lievelingsvak op school is ${a}?`},
+  {key:"vakantie",   label:"Droomvakantiebestemming",                     template:a=>`Wie wil het allerliefst naartoe: ${a}?`},
+  {key:"bijnaam",    label:"Bijnaam",                                     template:a=>`Wiens bijnaam is dit: ${a}?`},
+  {key:"minstvak",   label:"Minst favoriete vak",                        template:a=>`Wie heeft hier een hekel aan op school: ${a}?`},
+  {key:"genant",     label:"Gênante situatie",                            template:a=>`Bij wie is dit ooit gebeurd: ${a}?`},
+  {key:"jeugd",      label:"Jeugdherinnering",                            template:a=>`Van wie is dit een jeugdherinnering: ${a}?`},
+  {key:"superkracht",label:"Gekozen superkracht",                         template:a=>`Wie zou deze superkracht kiezen: ${a}?`},
+  {key:"goedin",     label:"Iets waar je stiekem goed in bent",           template:a=>`Wie is hier stiekem heel goed in: ${a}?`},
+  {key:"droom",      label:"Grootste droom of ambitie",                   template:a=>`Wiens grote droom is dit: ${a}?`},
+  {key:"gewoonte",   label:"Typische eigenaardigheid",                    template:a=>`Bij wie hoort deze gewoonte: ${a}?`},
+  {key:"bang",       label:"Vroeger bang voor, nu niet meer",             template:a=>`Wie was hier vroeger bang voor: ${a}?`},
+  {key:"trots",      label:"Waar het meest trots op",                     template:a=>`Wie is hier het meest trots op: ${a}?`},
+  {key:"onzichtbaar",label:"Wat zou je doen als je 1 dag onzichtbaar was",template:a=>`Wie zou dit doen als hij of zij onzichtbaar was: ${a}?`}
 ];
 
 function render(html){ document.getElementById("content").innerHTML = html; }
@@ -444,24 +458,37 @@ async function showPlayerHome(){
 // ---------- QUIZ FLOW ----------
 async function startQuiz(dayNum){
   render(`<div class="loading">Test laden...</div>`);
-  const day = await getDay(dayNum);
-  const bank = await getBank();
-  const players = await getPlayers();
-  const bankQs = day.questionIds.map(id=>bank.find(b=>b.id===id)).filter(Boolean);
-  const dayQs = (day.dayQuestions||[]);
-  const allQs = [...bankQs, ...dayQs].map(q=>({...q}));
-  if(allQs.length===0){
-    render(`<div class="card center"><p>Deze dag heeft nog geen vragen. Vraag de Super toffe Begeleiding om deze in te vullen.</p><button onclick="showPlayerHome()">Terug</button></div>`);
-    return;
+  try{
+    const day = await getDay(dayNum);
+    const bank = await getBank();
+    const players = await getPlayers();
+    const bankQs = day.questionIds.map(id=>bank.find(b=>b.id===id)).filter(Boolean);
+    const dayQs = day.dayQuestions || [];
+    let allQs = [...bankQs, ...dayQs].map(q=>({...q}));
+    // Vragen zonder (genoeg) opties overslaan, zodat één kapotte vraag niet de hele test blokkeert
+    allQs = allQs.filter(q => Array.isArray(q.options) && q.options.length >= 2);
+    if(allQs.length===0){
+      render(`<div class="card center"><p>Deze dag heeft nog geen (geldige) vragen. Vraag de Super toffe Begeleiding om deze in te vullen.</p><button onclick="showPlayerHome()">Terug</button></div>`);
+      return;
+    }
+    quizState = {
+      dayNum, questions: allQs, idx: 0,
+      answers: new Array(allQs.length).fill(null),
+      qStart: Date.now(), totalStart: Date.now(),
+      times: new Array(allQs.length).fill(0),
+      molGuess: null, players
+    };
+    renderQuizQuestion();
+  } catch(e){
+    console.error("startQuiz mislukt", e);
+    render(`
+      <div class="card center">
+        <p style="color:#e08a72">Er ging iets mis bij het laden van deze test. Probeer het opnieuw, of laat de Super toffe Begeleiding de vragen van deze dag controleren.</p>
+        <button class="full" onclick="startQuiz(${dayNum})">Opnieuw proberen</button>
+        <button class="secondary full" onclick="showPlayerHome()">Terug naar overzicht</button>
+      </div>
+    `);
   }
-  quizState = {
-    dayNum, questions: allQs, idx: 0,
-    answers: new Array(allQs.length).fill(null),
-    qStart: Date.now(), totalStart: Date.now(),
-    times: new Array(allQs.length).fill(0),
-    molGuess: null, players
-  };
-  renderQuizQuestion();
 }
 
 function renderQuizQuestion(){
@@ -518,8 +545,28 @@ async function finishQuiz(){
   const bankQs = day.questionIds.map(id=>bank.find(b=>b.id===id)).filter(Boolean);
   const dayQs = (day.dayQuestions||[]);
   const allQs = [...bankQs, ...dayQs];
+
+  // Als er vragen met een categorie bij zitten (uit de mollicitatie-generator), en er is een
+  // geheime Mol voor deze dag, dan telt een antwoord ook goed als het letterlijk hetzelfde is
+  // als het antwoord van de Mol op diezelfde categorie — ook al stond dat niet als de
+  // "officiële" juiste optie.
+  let molProfile = null;
+  if(day.molId && allQs.some(q => q && q.category)){
+    molProfile = await getProfile(day.molId);
+  }
+
   let correct = 0;
-  qs.answers.forEach((a,i)=>{ if(allQs[i] && a===allQs[i].correctIndex) correct++; });
+  qs.answers.forEach((a,i)=>{
+    const q = allQs[i];
+    if(!q) return;
+    if(a === q.correctIndex){ correct++; return; }
+    if(q.category && molProfile && a !== null && Array.isArray(q.options)){
+      const chosenText = (q.options[a] || "").trim().toLowerCase();
+      const molAnswer = (molProfile[q.category] || "").trim().toLowerCase();
+      if(chosenText && molAnswer && chosenText === molAnswer) correct++;
+    }
+  });
+
   const score = correct * POINTS_PER_Q;
   const totalTimeMs = Date.now() - qs.totalStart;
   const record = {
@@ -530,9 +577,8 @@ async function finishQuiz(){
   render(`
     <div class="card center">
       <h2>Test ingeleverd!</h2>
-      <p>Je had <strong>${correct}</strong> van de ${allQs.length} vragen goed.</p>
-      <p style="font-size:22px;color:var(--gold)"><strong>${score} punten</strong></p>
-      <p class="small">Tijd: ${(totalTimeMs/1000).toFixed(1)} sec (telt mee bij gelijke stand)</p>
+      <p>Bedankt, Viking! Je antwoorden zijn opgeslagen.</p>
+      <p class="small">De uitslag wordt geheim gehouden en later onthuld door de Super toffe Begeleiding.</p>
       <button class="full" onclick="showPlayerHome()">Terug naar overzicht</button>
     </div>
   `);
@@ -721,19 +767,35 @@ async function confirmSeedTestData(){
 
   // 3) Vragenbank genereren op basis van de mollicitatie-antwoorden
   //    (twee vragen per categorie, met een andere speler als correct antwoord, voor meer variatie)
+  //    De opties zijn de daadwerkelijke antwoorden van de kandidaten (niet hun naam), zonder
+  //    dubbele antwoorden. category wordt bewaard voor de Mol-vergelijking bij het nakijken.
   const bank = [];
   const profileKeys = Object.keys(TEST_PROFILE_DATA);
   profileKeys.forEach((key, i) => {
     const fq = FIXED_QUESTIONS.find(f => f.key === key);
     [i, i + 7].forEach(offset => {
       const correctPlayer = players[offset % players.length];
-      const answerText = profiles[correctPlayer.id][key];
-      const others = players.filter(p => p.id !== correctPlayer.id);
-      const distractors = [...others].sort(() => Math.random() - 0.5).slice(0, 3);
-      const idsShuffled = [correctPlayer, ...distractors].sort(() => Math.random() - 0.5);
-      const options = idsShuffled.map(p => p.name);
-      const correctIndex = idsShuffled.findIndex(p => p.id === correctPlayer.id);
-      bank.push({id: uid()+"q", text: fq.template(answerText), options, correctIndex});
+      const correctAnswer = (profiles[correctPlayer.id][key] || "").trim();
+      if(!correctAnswer) return;
+      const seen = new Set([correctAnswer.toLowerCase()]);
+      const others = [...players].sort(() => Math.random() - 0.5);
+      const distractors = [];
+      for(const p of others){
+        if(p.id === correctPlayer.id) continue;
+        const ans = (profiles[p.id][key] || "").trim();
+        if(!ans || seen.has(ans.toLowerCase())) continue;
+        seen.add(ans.toLowerCase());
+        distractors.push(ans);
+        if(distractors.length === 3) break;
+      }
+      if(distractors.length === 0) return;
+      const options = [correctAnswer, ...distractors].sort(() => Math.random() - 0.5);
+      const correctIndex = options.findIndex(o => o.toLowerCase() === correctAnswer.toLowerCase());
+      bank.push({
+        id: uid()+"q",
+        text: `Wat is "${fq.label}" van ${correctPlayer.name}?`,
+        options, correctIndex, category: key
+      });
     });
   });
   await sSet("bank", bank);
@@ -1162,20 +1224,33 @@ async function loadGenPreview(){
   const correctId = document.getElementById("gen_correct").value;
   const fq = FIXED_QUESTIONS.find(f=>f.key===key);
   const players = await getPlayers();
+  const correctPlayer = players.find(p=>p.id===correctId);
   const profile = await getProfile(correctId);
-  const answerText = profile[key];
+  const answerText = (profile[key]||"").trim();
   const others = players.filter(p=>p.id!==correctId);
-  const checks = others.map(p=>`
-    <label style="font-weight:normal;display:flex;gap:8px;align-items:center;margin:4px 0;">
-      <input type="checkbox" class="genDistractor" value="${p.id}"> ${esc(p.name)}
-    </label>`).join("");
+  // Verzamel per andere speler hun antwoord voor dit onderwerp. Antwoorden die (ongeacht
+  // hoofdletters/spaties) hetzelfde zijn als het juiste antwoord worden overgeslagen, zodat
+  // er nooit twee identieke opties in de test verschijnen.
+  let rowsHtml = "";
+  const seen = new Set([answerText.toLowerCase()]);
+  for(const p of others){
+    const otherProfile = await getProfile(p.id);
+    const otherAnswer = (otherProfile[key]||"").trim();
+    if(!otherAnswer || seen.has(otherAnswer.toLowerCase())) continue;
+    seen.add(otherAnswer.toLowerCase());
+    rowsHtml += `
+      <label style="font-weight:normal;display:flex;gap:8px;align-items:center;margin:4px 0;">
+        <input type="checkbox" class="genDistractor" value="${esc(otherAnswer)}"> "${esc(otherAnswer)}" <span class="small">(${esc(p.name)})</span>
+      </label>`;
+  }
   document.getElementById("genPreview").innerHTML = `
     <p style="margin-top:12px"><strong>Vraagtekst (aanpasbaar):</strong></p>
-    <textarea id="gen_text">${esc(fq.template(answerText))}</textarea>
-    <p class="small">Kies precies 3 andere spelers als foute opties:</p>
-    <button class="secondary" onclick="pickRandomDistractors()">Willekeurig 3 kiezen</button>
-    ${checks}
-    <button class="full" style="margin-top:10px" onclick="saveGeneratedQuestion('${correctId}')">✓ Vraag opslaan in vragenbank</button>
+    <textarea id="gen_text">Wat is "${esc(fq.label)}" van ${esc(correctPlayer ? correctPlayer.name : "")}?</textarea>
+    <p class="small">Juiste antwoord (wordt automatisch als optie toegevoegd): "<strong>${esc(answerText)}</strong>"</p>
+    <p class="small">Kies 1 t/m 3 andere (unieke) antwoorden als foute opties:</p>
+    <button class="secondary" onclick="pickRandomDistractors()">Willekeurig kiezen</button>
+    ${rowsHtml || "<p class='small'>Geen andere unieke antwoorden beschikbaar voor dit onderwerp — vul eerst meer mollicitaties in.</p>"}
+    <button class="full" style="margin-top:10px" onclick="saveGeneratedQuestion('${correctId}','${key}')">✓ Vraag opslaan in vragenbank</button>
   `;
 }
 function pickRandomDistractors(){
@@ -1183,17 +1258,26 @@ function pickRandomDistractors(){
   boxes.forEach(b=>b.checked=false);
   [...boxes].sort(()=>Math.random()-0.5).slice(0,3).forEach(b=>b.checked=true);
 }
-async function saveGeneratedQuestion(correctId){
+async function saveGeneratedQuestion(correctId, key){
   const checked = Array.from(document.querySelectorAll(".genDistractor:checked")).map(el=>el.value);
-  if(checked.length!==3){ alert("Kies precies 3 andere spelers als foute opties."); return; }
+  if(checked.length<1){ alert("Kies minstens 1 ander antwoord als foute optie."); return; }
   const text = document.getElementById("gen_text").value.trim();
   if(!text){ alert("De vraagtekst mag niet leeg zijn."); return; }
-  const players = await getPlayers();
-  const idsShuffled = [correctId, ...checked].sort(()=>Math.random()-0.5);
-  const options = idsShuffled.map(id=>players.find(p=>p.id===id).name);
-  const correctIndex = idsShuffled.indexOf(correctId);
+  const profile = await getProfile(correctId);
+  const correctAnswer = (profile[key]||"").trim();
+  if(!correctAnswer){ alert("Kon het juiste antwoord niet meer vinden."); return; }
+  // Nogmaals deduplicaren voor de zekerheid, en het juiste antwoord toevoegen
+  const seen = new Set([correctAnswer.toLowerCase()]);
+  const distractors = [];
+  checked.forEach(a=>{
+    if(!seen.has(a.toLowerCase())){ seen.add(a.toLowerCase()); distractors.push(a); }
+  });
+  const optionsShuffled = [correctAnswer, ...distractors].sort(()=>Math.random()-0.5);
+  const correctIndex = optionsShuffled.findIndex(o=>o.toLowerCase()===correctAnswer.toLowerCase());
   const bank = await getBank();
-  bank.push({id: uid()+"q", text, options, correctIndex});
+  // category wordt bewaard zodat we bij het nakijken ook het antwoord van de dag-Mol kunnen
+  // vergelijken: als de Mol toevallig hetzelfde antwoord had, telt dat ook goed.
+  bank.push({id: uid()+"q", text, options: optionsShuffled, correctIndex, category: key});
   const ok = await sSet("bank", bank);
   if(!ok){ alert("Opslaan is mislukt."); return; }
   alert("Vraag toegevoegd aan de vragenbank!");
