@@ -482,14 +482,41 @@ async function startQuiz(dayNum){
     const day = await getDay(dayNum);
     const bank = await getBank();
     const players = await getPlayers();
-    const bankQs = day.questionIds.map(id=>bank.find(b=>b.id===id)).filter(Boolean);
-    const dayQs = day.dayQuestions || [];
-    let allQs = [...bankQs, ...dayQs].map(q=>({...q}));
-    // Vragen zonder (genoeg) opties overslaan, zodat één kapotte vraag niet de hele test blokkeert
     // 11-07 toegevoegd suggestie van Co
-    for (...) {
-   ...
+    const bankQs = day.questionIds.map(id =>
+  bank.find(b => b.id === id)
+).filter(Boolean);
+
+const dayQs = day.dayQuestions || [];
+
+let allQs = [...bankQs, ...dayQs].map(q => ({ ...q }));
+
+for (const q of allQs) {
+  if (!q.category) continue;
+
+  const opts = [];
+
+  for (const p of players) {
+    const profile = await getProfile(p.id);
+
+    if (profile && profile[q.category]) {
+      opts.push(profile[q.category]);
+    }
+  }
+
+  q.options = [...new Set(opts)];
 }
+
+allQs = allQs.filter(q =>
+  Array.isArray(q.options) &&
+  q.options.length >= 2
+);
+    // const bankQs = day.questionIds.map(id=>bank.find(b=>b.id===id)).filter(Boolean);
+    // const dayQs = day.dayQuestions || [];
+    // let allQs = [...bankQs, ...dayQs].map(q=>({...q}));
+    // Vragen zonder (genoeg) opties overslaan, zodat één kapotte vraag niet de hele test blokkeert
+    
+ 
     allQs = allQs.filter(q => Array.isArray(q.options) && q.options.length >= 2);
     if(allQs.length===0){
       render(`<div class="card center"><p>Deze dag heeft nog geen (geldige) vragen. Vraag de Super toffe Begeleiding om deze in te vullen.</p><button onclick="showPlayerHome()">Terug</button></div>`);
