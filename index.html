@@ -475,48 +475,90 @@ async function showPlayerHome(){
 // die categorie, waarbij identieke antwoorden (ongeacht hoofdletters/spaties) worden
 // samengevoegd tot 1 optie — er wordt dus nooit een naam getoond, alleen de waarde zelf.
 async function buildMolQuestions(day, players){
-  if(!day.molId || !day.molCategories || day.molCategories.length===0) return [];
+  if(!day.molId) return [];
+
   const profiles = {};
-  for(const p of players){ profiles[p.id] = await getProfile(p.id); }
+  for(const p of players){
+    profiles[p.id] = await getProfile(p.id);
+  }
+
   const molProfile = profiles[day.molId];
   if(!molProfile) return [];
 
+  // Alle categorieën waar de Mol iets heeft ingevuld
+  const available = FIXED_QUESTIONS.filter(f=>{
+    return (molProfile[f.key] || "").trim() !== "";
+  });
+
+  // Maximaal 12 willekeurige categorieën
+  const selected = [...available]
+    .sort(()=>Math.random()-0.5)
+    .slice(0,12);
+
   const questions = [];
-  for(const key of day.molCategories){
-    const fq = FIXED_QUESTIONS.find(f=>f.key===key);
-    if(!fq) continue;
+
+  for(const fq of selected){
+
+    const key = fq.key;
     const molAnswer = (molProfile[key] || "").trim();
-    if(!molAnswer) continue; // de Mol heeft dit onderwerp zelf niet ingevuld, dan geen vraag
 
-    // Verzamel alle unieke antwoorden (van alle spelers, incl. de Mol) voor deze categorie
-    const seenLower = new Set();
-    const uniqueValues = [];
+    const uniqueAnswers = [];
+    const seen = new Set();
+
     for(const p of players){
-      const v = (profiles[p.id][key] || "").trim();
-      if(!v) continue;
-      const lower = v.toLowerCase();
-      if(seenLower.has(lower)) continue;
-      seenLower.add(lower);
-      uniqueValues.push(v);
-    }
-    const molLower = molAnswer.toLowerCase();
-    const correctValue = uniqueValues.find(v=>v.toLowerCase()===molLower) || molAnswer;
-    const otherValues = uniqueValues.filter(v=>v.toLowerCase()!==molLower);
-    if(otherValues.length===0) continue; // geen andere unieke waarden, kan geen meerkeuze maken
 
-    const distractors = [...otherValues].sort(()=>Math.random()-0.5).slice(0,3);
-    const options = [correctValue, ...distractors].sort(()=>Math.random()-0.5);
-    const correctIndex = options.findIndex(o=>o.toLowerCase()===molLower);
+      const profile = profiles[p.id];
+      if(!profile) continue;
+
+      const value = (profile[key] || "").trim();
+      if(!value) continue;
+
+      const lower = value.toLowerCase();
+
+      if(seen.has(lower)) continue;
+
+      seen.add(lower);
+      uniqueAnswers.push(value);
+    }
+
+    if(uniqueAnswers.length < 2) continue;
+
+    const others = uniqueAnswers.filter(
+      v=>v.toLowerCase()!=molAnswer.toLowerCase()
+    );
+
+    if(others.length===0) continue;
+
+    const distractors =
+      [...others]
+      .sort(()=>Math.random()-0.5)
+      .slice(0,3);
+
+    const options = [
+      molAnswer,
+      ...distractors
+    ];
+
+    // Willekeurig schudden
+    options.sort(()=>Math.random()-0.5);
+
+    const correctIndex =
+      options.findIndex(
+        o=>o.toLowerCase()==molAnswer.toLowerCase()
+      );
 
     questions.push({
-      text: fq.molQ,
-      options, correctIndex,
-      category: key, isMolQuestion: true
+      text:fq.molQ,
+      options,
+      correctIndex,
+      category:key,
+      isMolQuestion:true
     });
+
   }
+
   return questions;
 }
-
 async function startQuiz(dayNum){
   render(`<div class="loading">Test laden...</div>`);
   try{
@@ -527,6 +569,7 @@ async function startQuiz(dayNum){
     const dayQs = day.dayQuestions || [];
     const molQs = await buildMolQuestions(day, players);
     let allQs = [...molQs, ...bankQs, ...dayQs].map(q=>({...q}));
+    allQs.sort(()=>Math.random()-0.5);
     // Vragen zonder (genoeg) opties overslaan, zodat één kapotte vraag niet de hele test blokkeert
     allQs = allQs.filter(q => Array.isArray(q.options) && q.options.length >= 2);
     // Eventuele oudere, over een met-naam-genoemde speler gaande vragen overslaan als die
@@ -1386,7 +1429,7 @@ async function saveMol(d){
 async function saveMolCategories(d){
   const keys = Array.from(document.querySelectorAll(".molCatPick:checked")).map(el=>el.value);
   const day = await getDay(d);
-  day.molCategories = keys;
+  // day.molCategories = keys;
   await setDay(d, day);
   alert("Mol-vragen voor dag "+d+" opgeslagen ("+keys.length+" onderwerpen).");
 }
