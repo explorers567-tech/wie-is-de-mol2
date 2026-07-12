@@ -235,7 +235,9 @@ async function getBank(){
     id: q.id,
     text: q.text || "",
     options: toArr(q.options),
-    correctIndex: (typeof q.correctIndex === "number") ? q.correctIndex : 0
+    correctIndex: (typeof q.correctIndex === "number") ? q.correctIndex : 0,
+    category: q.category || null,
+    targetPlayerId: q.targetPlayerId || null
   }));
 }
 // FIX: getDay gebruikte eerder een getal als sleutel — Firebase slaat dit op als array-index.
@@ -245,10 +247,11 @@ async function getBank(){
 // het laden van de test dan vast zonder foutmelding.
 async function getDay(n){
   const d = await sGet("days/day_"+n);
-  if(!d) return {questionIds:[], dayQuestions:[], molId:null, open:false, votingOpen:false, closed:false};
+  if(!d) return {questionIds:[], dayQuestions:[], molId:null, open:false, votingOpen:false, closed:false, molCategories:[]};
   return {
     ...d,
     questionIds: toArr(d.questionIds),
+    molCategories: toArr(d.molCategories),
     dayQuestions: toArr(d.dayQuestions).map(q => ({
       text: (q && q.text) || "",
       options: toArr(q && q.options),
@@ -264,28 +267,28 @@ async function saveProfile(playerId, data){ return await sSet("profiles/"+player
 
 // ---------- MOLLICITATIE VRAGEN ----------
 const FIXED_QUESTIONS = [
-  {key:"eten",       label:"Wat is jouw favoriete eten",                           template:a=>`Van welk voedsel houdt onze dag Mol het meest: ${a}?`},
-  {key:"muziek",     label:"Wat is jouw favoriete muziek / artiest",               template:a=>`Naar welke muziek luistert onze dag Mol graag: ${a}?`},
-  {key:"film",       label:"Wat is jouw favoriete film of serie",                  template:a=>`Wat is de favoriete film of serie van onze dag Mol: ${a}?`},
-  {key:"huisdier",   label:"Welke huisdieren heb jij",                             template:a=>`Welk huisdier (of huisdieren) heeft onze dag Mol: ${a}?`},
-  {key:"hobby",      label:"Wat is jouw hobby naast scouting",                     template:a=>`Wat doet onze dag Mol het liefst in zijn of haar vrije tijd: ${a}?`},
-  {key:"vak",        label:"Wat is jouw lievelingsvak op school",                  template:a=>`Wat is het lievelingsvak van onze dag Mol op school: ${a}?`},
-  {key:"vakantie",   label:"Wat is jouw droomvakantiebestemming",                  template:a=>`Waar wil onze dag Mol het allerliefst naartoe: ${a}?`},
-  {key:"bijnaam",    label:"Wat is jouw bijnaam",                                  template:a=>`Welke bijnaam heeft onze dag Mol: ${a}?`},
-  {key:"minstvak",   label:"Wat is jouw minst favoriete vak",                      template:a=>`Waar heeft onze dag Mol een hekel aan op school: ${a}?`},
-  {key:"genant",     label:"Welke gênante situatie heb je meegemaakt",             template:a=>`Wat is er bij onze dag Mol ooit gebeurd: ${a}?`},
-  {key:"jeugd",      label:"Welke jeugdherinnering heb jij",                       template:a=>`Welke jeugdherinnering is onze dag Mol: ${a}?`},
-  {key:"superkracht",label:"Welke superkracht zou je graag willen",                template:a=>`Welke superkracht zou onze dag Mol kiezen: ${a}?`},
-  {key:"goedin",     label:"Waar ben je stiekem goed in",                          template:a=>`Waar is onze dag Mol stiekem heel goed in: ${a}?`},
-  {key:"droom",      label:"Wat is jouw grootste droom of ambitie",                template:a=>`Wat is onze dag Mol zijn of haar grote droom: ${a}?`},
-  {key:"gewoonte",   label:"Welke typische eigenaardigheid heb jij",               template:a=>`Welke gewoonte heeft onze dag Mol: ${a}?`},
-  {key:"bang",       label:"Waar was je vroeger bang voor, maar nu niet meer",     template:a=>`Waar was onze dag Mol vroeger bang voor: ${a}?`},
-  {key:"trots",      label:"Waar ben jij het meest trots op",                      template:a=>`Waar is onze dag Mol het meest trots op: ${a}?`},
-  {key:"Schoenmaat", label:"Welke schoonmaat heb je",                              template:a=>`Wat is de schoonmaat van de dag Mol: ${a}?`},
-  {key:"Lengte",     label:"Hoe lang ben je",                                      template:a=>`Hoe lang is onze dag Mol: ${a}?`},
-  {key:"Haarkleur",  label:"Wat is je haarkleur",                                  template:a=>`Welke haarkleur heeft onze dag Mol: ${a}?`},
-  {key:"Scouting",   label:"Hoe lang zit je al op scouting",                       template:a=>`Hoe lang zit onze dag Mol al op scouting: ${a}?`},
-  {key:"onzichtbaar",label:"Wat zou je doen als je 1 dag onzichtbaar was",         template:a=>`Wat zou onze dag Mol doen als hij of zij onzichtbaar was: ${a}?`}
+  {key:"eten",       label:"Wat is jouw favoriete eten",                           molQ:"Van welk voedsel houdt onze dag Mol het meest?"},
+  {key:"muziek",     label:"Wat is jouw favoriete muziek / artiest",               molQ:"Naar welke muziek luistert onze dag Mol het liefst?"},
+  {key:"film",       label:"Wat is jouw favoriete film of serie",                  molQ:"Wat is de favoriete film of serie van onze dag Mol?"},
+  {key:"huisdier",   label:"Welke huisdieren heb jij",                             molQ:"Welk huisdier (of huisdieren) heeft onze dag Mol?"},
+  {key:"hobby",      label:"Wat is jouw hobby naast scouting",                     molQ:"Wat doet onze dag Mol het liefst in zijn of haar vrije tijd?"},
+  {key:"vak",        label:"Wat is jouw lievelingsvak op school",                  molQ:"Wat is het lievelingsvak van onze dag Mol op school?"},
+  {key:"vakantie",   label:"Wat is jouw droomvakantiebestemming",                  molQ:"Waar wil onze dag Mol het allerliefst naartoe op vakantie?"},
+  {key:"bijnaam",    label:"Wat is jouw bijnaam",                                  molQ:"Welke bijnaam heeft onze dag Mol?"},
+  {key:"minstvak",   label:"Wat is jouw minst favoriete vak",                      molQ:"Waar heeft onze dag Mol een hekel aan op school?"},
+  {key:"genant",     label:"Welke gênante situatie heb je meegemaakt",             molQ:"Wat is er ooit gênants gebeurd bij onze dag Mol?"},
+  {key:"jeugd",      label:"Welke jeugdherinnering heb jij",                       molQ:"Wat is een jeugdherinnering van onze dag Mol?"},
+  {key:"superkracht",label:"Welke superkracht zou je graag willen",                molQ:"Welke superkracht zou onze dag Mol kiezen?"},
+  {key:"goedin",     label:"Waar ben je stiekem goed in",                          molQ:"Waar is onze dag Mol stiekem heel goed in?"},
+  {key:"droom",      label:"Wat is jouw grootste droom of ambitie",                molQ:"Wat is de grote droom of ambitie van onze dag Mol?"},
+  {key:"gewoonte",   label:"Welke typische eigenaardigheid heb jij",               molQ:"Welke typische gewoonte heeft onze dag Mol?"},
+  {key:"bang",       label:"Waar was je vroeger bang voor, maar nu niet meer",     molQ:"Waar was onze dag Mol vroeger bang voor?"},
+  {key:"trots",      label:"Waar ben jij het meest trots op",                      molQ:"Waar is onze dag Mol het meest trots op?"},
+  {key:"Schoenmaat", label:"Welke schoonmaat heb je",                              molQ:"Wat is de schoenmaat van onze dag Mol?"},
+  {key:"Lengte",     label:"Hoe lang ben je",                                      molQ:"Hoe lang is onze dag Mol?"},
+  {key:"Haarkleur",  label:"Wat is je haarkleur",                                  molQ:"Wat is de haarkleur van onze dag Mol?"},
+  {key:"Scouting",   label:"Hoe lang zit je al op scouting",                       molQ:"Hoe lang zit onze dag Mol al op scouting?"},
+  {key:"onzichtbaar",label:"Wat zou je doen als je 1 dag onzichtbaar was",         molQ:"Wat zou onze dag Mol doen als hij of zij 1 dag onzichtbaar was?"}
 ];
 
 function render(html){ document.getElementById("content").innerHTML = html; }
@@ -341,23 +344,7 @@ async function confirmPlayer(){
     return;
   }
   render(`<div class="loading">Naam controleren...</div>`);
-  // const players = await getPlayers();
-  // 11-07 bovenstaande uitgefilterd en onderstaande toegevoegd, suggestie Co
-  for (const q of allQs) {
-  if (!q.category) continue;
-
-  const opts = [];
-
-  for (const p of players) {
-    const profile = await getProfile(p.id);
-
-    if (profile && profile[q.category]) {
-      opts.push(profile[q.category]);
-    }
-  }
-
-  q.options = [...new Set(opts)];
-}
+  const players = await getPlayers();
   // Hoofdletterongevoelige vergelijking zodat "menno" en "Menno" beide werken
   const found = players.find(p => p.name.trim().toLowerCase() === input.toLowerCase());
   if(found){
@@ -476,48 +463,70 @@ async function showPlayerHome(){
 }
 
 // ---------- QUIZ FLOW ----------
+// ---------- MOL-VRAGEN DYNAMISCH OPBOUWEN ----------
+// Voor elke door de begeleiding gekozen categorie (bijv. "Haarkleur") wordt één vraag gemaakt
+// over de geheime dag-Mol. De opties zijn de daadwerkelijke antwoorden van ALLE spelers voor
+// die categorie, waarbij identieke antwoorden (ongeacht hoofdletters/spaties) worden
+// samengevoegd tot 1 optie — er wordt dus nooit een naam getoond, alleen de waarde zelf.
+async function buildMolQuestions(day, players){
+  if(!day.molId || !day.molCategories || day.molCategories.length===0) return [];
+  const profiles = {};
+  for(const p of players){ profiles[p.id] = await getProfile(p.id); }
+  const molProfile = profiles[day.molId];
+  if(!molProfile) return [];
+
+  const questions = [];
+  for(const key of day.molCategories){
+    const fq = FIXED_QUESTIONS.find(f=>f.key===key);
+    if(!fq) continue;
+    const molAnswer = (molProfile[key] || "").trim();
+    if(!molAnswer) continue; // de Mol heeft dit onderwerp zelf niet ingevuld, dan geen vraag
+
+    // Verzamel alle unieke antwoorden (van alle spelers, incl. de Mol) voor deze categorie
+    const seenLower = new Set();
+    const uniqueValues = [];
+    for(const p of players){
+      const v = (profiles[p.id][key] || "").trim();
+      if(!v) continue;
+      const lower = v.toLowerCase();
+      if(seenLower.has(lower)) continue;
+      seenLower.add(lower);
+      uniqueValues.push(v);
+    }
+    const molLower = molAnswer.toLowerCase();
+    const correctValue = uniqueValues.find(v=>v.toLowerCase()===molLower) || molAnswer;
+    const otherValues = uniqueValues.filter(v=>v.toLowerCase()!==molLower);
+    if(otherValues.length===0) continue; // geen andere unieke waarden, kan geen meerkeuze maken
+
+    const distractors = [...otherValues].sort(()=>Math.random()-0.5).slice(0,3);
+    const options = [correctValue, ...distractors].sort(()=>Math.random()-0.5);
+    const correctIndex = options.findIndex(o=>o.toLowerCase()===molLower);
+
+    questions.push({
+      text: fq.molQ,
+      options, correctIndex,
+      category: key, isMolQuestion: true
+    });
+  }
+  return questions;
+}
+
 async function startQuiz(dayNum){
   render(`<div class="loading">Test laden...</div>`);
   try{
     const day = await getDay(dayNum);
     const bank = await getBank();
     const players = await getPlayers();
-    // 11-07 toegevoegd suggestie van Co
-    const bankQs = day.questionIds.map(id =>
-  bank.find(b => b.id === id)
-).filter(Boolean);
-
-const dayQs = day.dayQuestions || [];
-
-let allQs = [...bankQs, ...dayQs].map(q => ({ ...q }));
-
-for (const q of allQs) {
-  if (!q.category) continue;
-
-  const opts = [];
-
-  for (const p of players) {
-    const profile = await getProfile(p.id);
-
-    if (profile && profile[q.category]) {
-      opts.push(profile[q.category]);
-    }
-  }
-
-  q.options = [...new Set(opts)];
-}
-
-allQs = allQs.filter(q =>
-  Array.isArray(q.options) &&
-  q.options.length >= 2
-);
-    // const bankQs = day.questionIds.map(id=>bank.find(b=>b.id===id)).filter(Boolean);
-    // const dayQs = day.dayQuestions || [];
-    // let allQs = [...bankQs, ...dayQs].map(q=>({...q}));
+    const bankQs = day.questionIds.map(id=>bank.find(b=>b.id===id)).filter(Boolean);
+    const dayQs = day.dayQuestions || [];
+    const molQs = await buildMolQuestions(day, players);
+    let allQs = [...molQs, ...bankQs, ...dayQs].map(q=>({...q}));
     // Vragen zonder (genoeg) opties overslaan, zodat één kapotte vraag niet de hele test blokkeert
-    
- 
     allQs = allQs.filter(q => Array.isArray(q.options) && q.options.length >= 2);
+    // Eventuele oudere, over een met-naam-genoemde speler gaande vragen overslaan als die
+    // toevallig over jezelf gaan (komt bij nieuwe Mol-vragen niet meer voor, want die noemen
+    // nooit een naam — dit is puur nog voor eventuele oude vragenbank-items).
+    allQs = allQs.filter(q => q.targetPlayerId !== me.id);
     if(allQs.length===0){
       render(`<div class="card center"><p>Deze dag heeft nog geen (geldige) vragen. Vraag de Super toffe Begeleiding om deze in te vullen.</p><button onclick="showPlayerHome()">Terug</button></div>`);
       return;
@@ -592,10 +601,10 @@ async function finishQuiz(){
   const qs = quizState;
   render(`<div class="loading">Resultaten opslaan...</div>`);
   const day = await getDay(qs.dayNum);
-  const bank = await getBank();
-  const bankQs = day.questionIds.map(id=>bank.find(b=>b.id===id)).filter(Boolean);
-  const dayQs = (day.dayQuestions||[]);
-  const allQs = [...bankQs, ...dayQs];
+  // Belangrijk: hier de vragenlijst gebruiken die de speler ook echt te zien kreeg
+  // (qs.questions, al gefilterd op geldigheid en op "niet over jezelf") — niet opnieuw
+  // opbouwen uit de dag-instellingen, anders lopen antwoorden en vragen uit elkaar.
+  const allQs = qs.questions;
 
   // Als er vragen met een categorie bij zitten (uit de mollicitatie-generator), en er is een
   // geheime Mol voor deze dag, dan telt een antwoord ook goed als het letterlijk hetzelfde is
@@ -643,11 +652,16 @@ async function computeScoreboard(){
 
   for(const d of DAYS){
     const day = await getDay(d);
-    const maxForDay = (day.questionIds.length + ((day.dayQuestions||[]).length)) * POINTS_PER_Q;
     const dayScores = {};
+    let maxForDay = 0;
     for(const p of players){
       const ans = await getAnswer(d, p.id);
       dayScores[p.id] = (ans && ans.submitted) ? {score: ans.score, time: ans.totalTimeMs||0} : {score:0, time:0};
+      // Het aantal vragen kan per dag variëren (dynamische Mol-vragen), dus we bepalen het
+      // maximum aan de hand van de langste ingeleverde antwoordenlijst van die dag.
+      if(ans && ans.submitted && Array.isArray(ans.answers)){
+        maxForDay = Math.max(maxForDay, ans.answers.length * POINTS_PER_Q);
+      }
     }
     if(day.molId && day.closed && dayScores[day.molId]){
       let wrongGuessers=0, totalGuessers=0;
@@ -741,7 +755,6 @@ async function showAdminHome(){
       <h2>Beheer</h2>
       <button class="full" onclick="showManagePlayers()">👥 Spelers beheren</button>
       <button class="full" onclick="showManageProfiles()">📝 Mollicitatie-antwoorden bekijken</button>
-      <button class="full" onclick="showGenerateQuestion()">⚡ Vraag genereren uit antwoorden</button>
       <button class="full" onclick="showManageBank()">📚 Vragenbank (handmatig)</button>
       <button class="full" onclick="showManageDays()">📅 Dagen instellen (Mol + vragen)</button>
       <button class="full" onclick="showAdminScoreboard()">🏆 Scorebord & uitslag</button>
@@ -816,41 +829,10 @@ async function confirmSeedTestData(){
   });
   await sSet("profiles", profiles);
 
-  // 3) Vragenbank genereren op basis van de mollicitatie-antwoorden
-  //    (twee vragen per categorie, met een andere speler als correct antwoord, voor meer variatie)
-  //    De opties zijn de daadwerkelijke antwoorden van de kandidaten (niet hun naam), zonder
-  //    dubbele antwoorden. category wordt bewaard voor de Mol-vergelijking bij het nakijken.
-  const bank = [];
-  const profileKeys = Object.keys(TEST_PROFILE_DATA);
-  profileKeys.forEach((key, i) => {
-    const fq = FIXED_QUESTIONS.find(f => f.key === key);
-    [i, i + 7].forEach(offset => {
-      const correctPlayer = players[offset % players.length];
-      const correctAnswer = (profiles[correctPlayer.id][key] || "").trim();
-      if(!correctAnswer) return;
-      const seen = new Set([correctAnswer.toLowerCase()]);
-      const others = [...players].sort(() => Math.random() - 0.5);
-      const distractors = [];
-      for(const p of others){
-        if(p.id === correctPlayer.id) continue;
-        const ans = (profiles[p.id][key] || "").trim();
-        if(!ans || seen.has(ans.toLowerCase())) continue;
-        seen.add(ans.toLowerCase());
-        distractors.push(ans);
-        if(distractors.length === 3) break;
-      }
-      if(distractors.length === 0) return;
-      const options = [correctAnswer, ...distractors].sort(() => Math.random() - 0.5);
-      const correctIndex = options.findIndex(o => o.toLowerCase() === correctAnswer.toLowerCase());
-      bank.push({
-        id: uid()+"q",
-        text: `Wat is "${fq.label}" van ${correctPlayer.name}?`,
-        options, correctIndex, category: key
-      });
-    });
-  });
-  await sSet("bank", bank);
-  const bankIds = bank.map(q => q.id);
+  // 3) Welke onderwerpen gebruiken we als Mol-vragen? Gewoon alle onderwerpen waar we
+  //    testdata voor hebben ingevuld — de vragen zelf worden dynamisch gebouwd per dag/Mol,
+  //    dus hier hoeft geen vragenbank meer gegenereerd te worden.
+  const molCategories = Object.keys(TEST_PROFILE_DATA);
 
   // 4) Dagvragen (over de "spellen van vandaag") — elke dag krijgt een eigen set
   function makeDayQuestions(){
@@ -865,7 +847,8 @@ async function confirmSeedTestData(){
     });
   }
 
-  // 5) Elke dag opbouwen: eigen Mol, eigen dagvragen, én gesimuleerde resultaten van alle 15 spelers
+  // 5) Elke dag opbouwen: eigen Mol, eigen dagvragen, eigen Mol-vragen, én gesimuleerde
+  //    resultaten van alle 15 spelers
   const molNames = [];
   for(const d of DAYS){
     const dayQuestions = makeDayQuestions();
@@ -873,8 +856,9 @@ async function confirmSeedTestData(){
     molNames.push(`Dag ${d}: ${molPlayer.name}`);
 
     const dayObj = {
-      questionIds: bankIds,
+      questionIds: [],
       dayQuestions,
+      molCategories,
       molId: molPlayer.id,
       open: true,
       votingOpen: false,
@@ -882,14 +866,15 @@ async function confirmSeedTestData(){
     };
     await setDay(d, dayObj);
 
-    const allQsDay = [...bank, ...dayQuestions];
+    const molQuestions = await buildMolQuestions(await getDay(d), players);
+    const allQsDay = [...molQuestions, ...dayQuestions];
     const answers = {};
     players.forEach(p => {
       const correctRatio = 0.4 + Math.random() * 0.5; // tussen 40% en 90% goed
       const answerArr = allQsDay.map(q => {
         if(Math.random() < correctRatio) return q.correctIndex;
-        let wrong = Math.floor(Math.random() * 4);
-        if(wrong === q.correctIndex) wrong = (wrong + 1) % 4;
+        let wrong = Math.floor(Math.random() * q.options.length);
+        if(wrong === q.correctIndex) wrong = (wrong + 1) % q.options.length;
         return wrong;
       });
       const correct = answerArr.filter((a,i) => a === allQsDay[i].correctIndex).length;
@@ -1230,111 +1215,6 @@ async function saveProfileForm(){
   alert("Antwoorden opgeslagen!");
 }
 
-// ---------- VRAAG GENERATOR ----------
-async function showGenerateQuestion(){
-  render(`<div class="loading">Laden...</div>`);
-  const players = await getPlayers();
-  if(players.length<4){
-    render(`${topbar("Vraag genereren","showAdminHome")}<div class="card"><p class="small">Je hebt minstens 4 spelers nodig.</p></div>`);
-    return;
-  }
-  const templateOpts = FIXED_QUESTIONS.map(fq=>`<option value="${fq.key}">${esc(fq.label)}</option>`).join("");
-  render(`
-    ${topbar("Vraag genereren", "showAdminHome")}
-    <div class="card">
-      <p class="small">Kies een onderwerp, selecteer de speler met het juiste antwoord, en voeg de vraag toe aan de bank.</p>
-      <label>Onderwerp</label>
-      <select id="gen_template" onchange="loadGenCorrectOptions()">${templateOpts}</select>
-      <div id="genBody" style="margin-top:14px"></div>
-    </div>
-  `);
-  loadGenCorrectOptions();
-}
-async function loadGenCorrectOptions(){
-  const key = document.getElementById("gen_template").value;
-  const players = await getPlayers();
-  let rows = [];
-  for(const p of players){
-    const profile = await getProfile(p.id);
-    if(profile[key]) rows.push({id:p.id, name:p.name, answer:profile[key]});
-  }
-  if(rows.length===0){
-    document.getElementById("genBody").innerHTML = `<p class="small">Niemand heeft hier nog een antwoord voor ingevuld. Ga naar "Mollicitatie-antwoorden bekijken".</p>`;
-    return;
-  }
-  const opts = rows.map(r=>`<option value="${r.id}">${esc(r.name)} — "${esc(r.answer)}"</option>`).join("");
-  document.getElementById("genBody").innerHTML = `
-    <label>Wie is het juiste antwoord?</label>
-    <select id="gen_correct">${opts}</select>
-    <button style="margin-top:8px" onclick="loadGenPreview()">Volgende →</button>
-    <div id="genPreview"></div>
-  `;
-}
-async function loadGenPreview(){
-  const key = document.getElementById("gen_template").value;
-  const correctId = document.getElementById("gen_correct").value;
-  const fq = FIXED_QUESTIONS.find(f=>f.key===key);
-  const players = await getPlayers();
-  const correctPlayer = players.find(p=>p.id===correctId);
-  const profile = await getProfile(correctId);
-  const answerText = (profile[key]||"").trim();
-  const others = players.filter(p=>p.id!==correctId);
-  // Verzamel per andere speler hun antwoord voor dit onderwerp. Antwoorden die (ongeacht
-  // hoofdletters/spaties) hetzelfde zijn als het juiste antwoord worden overgeslagen, zodat
-  // er nooit twee identieke opties in de test verschijnen.
-  let rowsHtml = "";
-  const seen = new Set([answerText.toLowerCase()]);
-  for(const p of others){
-    const otherProfile = await getProfile(p.id);
-    const otherAnswer = (otherProfile[key]||"").trim();
-    if(!otherAnswer || seen.has(otherAnswer.toLowerCase())) continue;
-    seen.add(otherAnswer.toLowerCase());
-    rowsHtml += `
-      <label style="font-weight:normal;display:flex;gap:8px;align-items:center;margin:4px 0;">
-        <input type="checkbox" class="genDistractor" value="${esc(otherAnswer)}"> "${esc(otherAnswer)}" <span class="small">(${esc(p.name)})</span>
-      </label>`;
-  }
-  document.getElementById("genPreview").innerHTML = `
-    <p style="margin-top:12px"><strong>Vraagtekst (aanpasbaar):</strong></p>
-    <textarea id="gen_text">Wat is "${esc(fq.label)}" van ${esc(correctPlayer ? correctPlayer.name : "")}?</textarea>
-    <p class="small">Juiste antwoord (wordt automatisch als optie toegevoegd): "<strong>${esc(answerText)}</strong>"</p>
-    <p class="small">Kies 1 t/m 3 andere (unieke) antwoorden als foute opties:</p>
-    <button class="secondary" onclick="pickRandomDistractors()">Willekeurig kiezen</button>
-    ${rowsHtml || "<p class='small'>Geen andere unieke antwoorden beschikbaar voor dit onderwerp — vul eerst meer mollicitaties in.</p>"}
-    <button class="full" style="margin-top:10px" onclick="saveGeneratedQuestion('${correctId}','${key}')">✓ Vraag opslaan in vragenbank</button>
-  `;
-}
-function pickRandomDistractors(){
-  const boxes = Array.from(document.querySelectorAll(".genDistractor"));
-  boxes.forEach(b=>b.checked=false);
-  [...boxes].sort(()=>Math.random()-0.5).slice(0,3).forEach(b=>b.checked=true);
-}
-async function saveGeneratedQuestion(correctId, key){
-  const checked = Array.from(document.querySelectorAll(".genDistractor:checked")).map(el=>el.value);
-  if(checked.length<1){ alert("Kies minstens 1 ander antwoord als foute optie."); return; }
-  const text = document.getElementById("gen_text").value.trim();
-  if(!text){ alert("De vraagtekst mag niet leeg zijn."); return; }
-  const profile = await getProfile(correctId);
-  const correctAnswer = (profile[key]||"").trim();
-  if(!correctAnswer){ alert("Kon het juiste antwoord niet meer vinden."); return; }
-  // Nogmaals deduplicaren voor de zekerheid, en het juiste antwoord toevoegen
-  const seen = new Set([correctAnswer.toLowerCase()]);
-  const distractors = [];
-  checked.forEach(a=>{
-    if(!seen.has(a.toLowerCase())){ seen.add(a.toLowerCase()); distractors.push(a); }
-  });
-  const optionsShuffled = [correctAnswer, ...distractors].sort(()=>Math.random()-0.5);
-  const correctIndex = optionsShuffled.findIndex(o=>o.toLowerCase()===correctAnswer.toLowerCase());
-  const bank = await getBank();
-  // category wordt bewaard zodat we bij het nakijken ook het antwoord van de dag-Mol kunnen
-  // vergelijken: als de Mol toevallig hetzelfde antwoord had, telt dat ook goed.
-  bank.push({id: uid()+"q", text, options: optionsShuffled, correctIndex, category: key});
-  const ok = await sSet("bank", bank);
-  if(!ok){ alert("Opslaan is mislukt."); return; }
-  alert("Vraag toegevoegd aan de vragenbank!");
-  showManageBank();
-}
-
 // ---------- VRAGENBANK (HANDMATIG) ----------
 async function showManageBank(){
   render(`<div class="loading">Laden...</div>`);
@@ -1413,6 +1293,12 @@ async function showManageDay(d){
       <span>${esc(q.text)}</span>
     </label>`).join("");
 
+  const molCats = day.molCategories || [];
+  const molCategoryChecks = FIXED_QUESTIONS.map(fq=>`
+    <label style="font-weight:normal;display:flex;gap:8px;align-items:center;margin:4px 0;">
+      <input type="checkbox" class="molCatPick" value="${fq.key}" ${molCats.includes(fq.key)?"checked":""}> ${esc(fq.label)}
+    </label>`).join("");
+
   const dq = day.dayQuestions && day.dayQuestions.length ? day.dayQuestions : [];
   let dayQHtml = "";
   for(let i=0;i<8;i++){
@@ -1450,9 +1336,16 @@ async function showManageDay(d){
       <button style="margin-top:8px" onclick="saveMol(${d})">Mol opslaan</button>
     </div>
     <div class="card">
-      <h2>Vragen uit de bank (kies 12)</h2>
-      <p class="small">Geselecteerd: <span id="bankCount">${(day.questionIds||[]).length}</span> / 12 aanbevolen</p>
-      <div id="bankPicker">${bankChecks || "<p class='small'>Voeg eerst vragen toe aan de bank.</p>"}</div>
+      <h2>🕵️ Mol-vragen voor deze dag</h2>
+      <p class="small">Kies over welke onderwerpen de spelers moeten raden. De vraag noemt <strong>nooit een naam</strong> — spelers kiezen bijvoorbeeld een haarkleur, en raden zo (zonder het met zoveel woorden te zeggen) wie zij denken dat de Mol is. Antwoorden die meerdere spelers gemeen hebben, tellen als 1 optie.</p>
+      ${molCategoryChecks}
+      <button class="full" style="margin-top:10px" onclick="saveMolCategories(${d})">Mol-vragen opslaan</button>
+    </div>
+    <div class="card">
+      <h2>Extra vragen uit de vragenbank (optioneel)</h2>
+      <p class="small">Handmatig toegevoegde algemene vragen (bijv. over het scoutingkamp zelf) — geen namen, dat bepaal je zelf bij het invullen.</p>
+      <p class="small">Geselecteerd: <span id="bankCount">${(day.questionIds||[]).length}</span></p>
+      <div id="bankPicker">${bankChecks || "<p class='small'>Nog geen vragen in de vragenbank.</p>"}</div>
       <button style="margin-top:10px" onclick="saveBankPicks(${d})">Selectie opslaan</button>
     </div>
     <div class="card">
@@ -1483,6 +1376,13 @@ async function saveMol(d){
   day.molId = sel.value;
   await setDay(d, day);
   alert("Mol voor dag "+d+" opgeslagen.");
+}
+async function saveMolCategories(d){
+  const keys = Array.from(document.querySelectorAll(".molCatPick:checked")).map(el=>el.value);
+  const day = await getDay(d);
+  day.molCategories = keys;
+  await setDay(d, day);
+  alert("Mol-vragen voor dag "+d+" opgeslagen ("+keys.length+" onderwerpen).");
 }
 async function saveBankPicks(d){
   const ids = Array.from(document.querySelectorAll(".bankPick:checked")).map(el=>el.value);
