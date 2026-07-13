@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
 <style>
-:root{
+/* :root{
   --wood-dark:#1c130d;
   --wood:#2e2114;
   --wood-light:#4a3520;
@@ -23,6 +23,17 @@
   --ink:#f0e6d2;
   --ink-dark:#2a1f14;
   --shadow:rgba(0,0,0,.55);
+} */
+:root{
+
+--bg:#000000;
+--panel:#081108;
+--panel-light:#102410;
+--green:#00ff66;
+--green-dark:#009944;
+--red:#ff0033;
+--text:#8dff8d;
+--border:#00aa44;
 }
 .reveal-screen svg{
   filter: drop-shadow(0 6px 16px rgba(0,0,0,0.5));
@@ -35,16 +46,20 @@
 body{
   margin:0;
   font-family:'Trebuchet MS', Verdana, sans-serif;
-  background:
+  /* background:
     radial-gradient(ellipse 700px 500px at 50% -10%, rgba(217,154,62,.16), transparent 60%),
-    radial-gradient(circle at 50% 0%, #2a1f16, #0d0a07 72%);
+    radial-gradient(circle at 50% 0%, #2a1f16, #0d0a07 72%); */
+  background:#000;
+  color:#8dff8d;
   color:var(--ink);
   min-height:100vh;
 }
 #app{max-width:520px;margin:0 auto;padding:16px 16px 60px;}
 .card{
-  background:linear-gradient(160deg,#2b2015,#1a130c);
-  border:1px solid var(--gold);
+  /* background:linear-gradient(160deg,#2b2015,#1a130c); */
+  background:#081108;
+  border:1px solid #00ff66;
+  /* border:1px solid var(--gold); */
   border-radius:10px;
   padding:18px;
   margin-bottom:16px;
@@ -82,9 +97,12 @@ input[type=text], input[type=number], input[type=password], select, textarea{
 }
 textarea{resize:vertical;min-height:50px;}
 button{
-  background:linear-gradient(180deg,var(--gold-light),var(--gold));
-  border:1px solid var(--wood-dark);
-  color:#2a1b09;
+  /* background:linear-gradient(180deg,var(--gold-light),var(--gold));
+  border:1px solid var(--wood-dark); */
+  background:#003d1f;
+  color:#00ff66;
+  border:1px solid #00ff66;
+  /* color:#2a1b09; */
   font-weight:bold;
   padding:10px 16px;
   border-radius:8px;
@@ -163,6 +181,22 @@ th{color:var(--gold-light);font-family:'Cinzel',Georgia,serif;font-size:12px;let
 .reveal-sub{font-size:14px;color:rgba(255,255,255,.65);margin-top:6px;}
 .reveal-close{margin-top:28px;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.4);color:#fff;font-size:16px;padding:10px 24px;border-radius:8px;cursor:pointer;}
 .hero-banner{width:100%;max-width:380px;border-radius:14px;border:2px solid var(--gold);box-shadow:0 10px 30px rgba(0,0,0,.5);margin:0 auto 14px;display:block;}
+body::before{
+content:"";
+position:fixed;
+left:0;
+top:0;
+width:100%;
+height:100%;
+pointer-events:none;
+opacity:.08;
+background-image:
+linear-gradient(
+transparent 50%,
+rgba(0,255,0,.08) 50%
+);
+background-size:100% 4px;
+}
 </style>
 </head>
 <body>
