@@ -286,12 +286,12 @@ const FIXED_QUESTIONS = [
   {key:"trots",      label:"Waar ben jij het meest trots op",                      molQ:"Waar is onze dag Mol het meest trots op?"},
   {key:"Schoenmaat", label:"Welke schoonmaat heb je",                              molQ:"Wat is de schoenmaat van onze dag Mol?"},
   {key:"Lengte",     label:"Hoe lang ben je (in centimeters)",                     molQ:"Hoe lang is onze dag Mol?"},
-  {key:"Ogen",     label:"Welke kleur ogen heb je",                                molQ:"Welke kleur ogen heeft onze dag Mol?"},
-  {key:"Merk", label:"Wat is je favourite merk",                                   molQ:"Wat ishet favourite merk van onze dag Mol?"},
-  {key:"Broer", label:"Hoeveel broers en of zussen heb je",                        molQ:"Hoeveel broers en of zussen heeft onze dag Mol?"},
-  {key:"Drankje", label:"Wat is je favourite drankje",                             molQ:"Wat is het favourite drankje van onze dag Mol?"},
-  {key:"Dier", label:"Als je een dier zou mogen worden, welk dier zou je dan kiezen", molQ:"In welk dier zou onze dag Mol willen veranderen?"},
-  {key:"Zwemdiploma", label:"Welke zwemdiploma's heb je",                          molQ:"Welke zwemdiploa's heeft onze dag Mol?"},
+  {key:"Ogen",       label:"Welke kleur ogen heb je",                              molQ:"Welke kleur ogen heeft onze dag Mol?"},
+  {key:"Merk",       label:"Wat is je favourite merk",                             molQ:"Wat ishet favourite merk van onze dag Mol?"},
+  {key:"Broer",      label:"Hoeveel broers en of zussen heb je",                   molQ:"Hoeveel broers en of zussen heeft onze dag Mol?"},
+  {key:"Drankje",    label:"Wat is je favourite drankje",                          molQ:"Wat is het favourite drankje van onze dag Mol?"},
+  {key:"Dier",       label:"Als je een dier zou mogen worden, welk dier zou je dan kiezen", molQ:"In welk dier zou onze dag Mol willen veranderen?"},
+  {key:"Zwemdiploma",label:"Welke zwemdiploma's heb je",                           molQ:"Welke zwemdiploa's heeft onze dag Mol?"},
   {key:"Haarkleur",  label:"Wat is je haarkleur",                                  molQ:"Wat is de haarkleur van onze dag Mol?"},
   {key:"Scouting",   label:"Hoe lang zit je al op scouting (in jaren)",            molQ:"Hoeveel jaar zit onze dag Mol al op scouting?"},
   {key:"onzichtbaar",label:"Wat zou je doen als je 1 dag onzichtbaar was",         molQ:"Wat zou onze dag Mol doen als hij of zij 1 dag onzichtbaar was?"}
@@ -314,7 +314,7 @@ async function showStart(){
     <div class="card center">
       <img class="hero-banner" src="${VIKING_IMG.start}" alt="Vikingheer en Vikingdame">
       <h2>Welkom, Viking</h2>
-      <p>Ben je een dappere strijder die de test gaat doen, of de wijze stamhoofdster/stamhoofd die alles regelt?</p>
+      <p>Ben je een dappere strijder die de test gaat doen, of een van de wijze en super toffe Begeleidings die alles regelt?</p>
       <button class="full" onclick="showPlayerLogin()">Ik ben speler</button>
       <button class="full secondary" onclick="showAdminLogin()">Ik ben een Super toffe Begeleiding</button>
     </div>
@@ -327,9 +327,9 @@ async function showPlayerLogin(){
   render(`
     <div class="card">
       <h2>Wie ben jij?</h2>
-      <p>Typ hier gewoon jouw eigen naam in. Is dit de eerste keer dat je meedoet? Dan word je automatisch aangemeld!</p>
-      <label>Jouw naam</label>
-      <input type="text" id="playerNameInput" placeholder="Voer je naam in..." autocomplete="off">
+      <p>Typ hier gewoon jouw eigen voor en achter naam in. Is dit de eerste keer dat je meedoet? Dan word je automatisch aangemeld!</p>
+      <label>Jouw voor en achter naam</label>
+      <input type="text" id="playerNameInput" placeholder="Voer je voor en achter naam in..." autocomplete="off">
       <div id="loginError" style="color:var(--red);font-size:13px;margin-top:6px;display:none;"></div>
       <button class="full" style="margin-top:14px" onclick="confirmPlayer()">Verder</button>
       <button class="secondary full" onclick="showStart()">&larr; Terug</button>
@@ -367,7 +367,7 @@ async function confirmPlayer(){
   render(`
     <div class="card">
       <h2>Nieuw hier?</h2>
-      <p>We kennen de naam <strong>${esc(input)}</strong> nog niet. Klopt de spelling? Dan word je hiermee aangemeld als nieuwe Viking-strijder.</p>
+      <p>We kennen de voor en achter naam <strong>${esc(input)}</strong> nog niet. Klopt de spelling? Dan word je hiermee aangemeld als nieuwe Viking-Wie-Is-De-Mol-strijder.</p>
       <div class="row">
         <button onclick="createAndLoginPlayer('${esc(input).replace(/'/g,"\\'")}')">✓ Ja, dit ben ik — meld mij aan</button>
         <button class="secondary" onclick="showPlayerLogin()">Nee, ik typ het opnieuw</button>
@@ -406,7 +406,7 @@ function showProfileIntake(existingProfile){
   let html = `
     <div class="card">
       <h2>Welkom bij Wie is de Mol, ${esc(me.name)}!</h2>
-      <p>Voordat je begint, vul je eerst jouw <strong>mollicitatie</strong> in. Jouw antwoorden worden gebruikt om vragen over jou te maken voor de andere spelers. Niemand anders ziet jouw antwoorden — alleen de organisatie. Je mag een vraag leeg laten als je dat liever hebt.</p>
+      <p>Voordat je begint, vul je eerst jouw <strong>mollicitatie</strong> in. Jouw antwoorden worden gebruikt om vragen over jou te maken voor de andere spelers. Niemand anders ziet jouw antwoorden — alleen de organisatie. Probeer de vragen zo eerlijk mogelijk in te vullen.</p>
     </div>
     <div class="card">
       <h2>Jouw mollicitatie</h2>
@@ -463,7 +463,7 @@ async function showPlayerHome(){
       ${rows}
     </div>
     <div class="card">
-      <p class="small">De uitslag wordt geheim gehouden en onthuld door de Super toffe Begeleiding tijdens de uitslagronde. Veel succes, Viking!</p>
+      <p class="small">De uitslag wordt geheim gehouden en vanavond onthuld door de Super toffe Begeleiding tijdens de test en executie. Veel succes, Viking!</p>
     </div>
   `);
 }
@@ -577,7 +577,7 @@ async function startQuiz(dayNum){
     // nooit een naam — dit is puur nog voor eventuele oude vragenbank-items).
     allQs = allQs.filter(q => q.targetPlayerId !== me.id);
     if(allQs.length===0){
-      render(`<div class="card center"><p>Deze dag heeft nog geen (geldige) vragen. Vraag de Super toffe Begeleiding om deze in te vullen.</p><button onclick="showPlayerHome()">Terug</button></div>`);
+      render(`<div class="card center"><p>Deze dag heeft nog geen (geldige) vragen. Wacht rustig af tot de Super Toffe Begeleiding deze online zet.</p><button onclick="showPlayerHome()">Terug</button></div>`);
       return;
     }
     quizState = {
