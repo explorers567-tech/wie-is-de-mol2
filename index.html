@@ -822,43 +822,43 @@ async function showAdminHome(){
   `);
 }
 
-// ---------- TESTOMGEVING AANMAKEN ----------
-const TEST_PLAYER_NAMES = [
-  "Sanne","Daan","Noor","Finn","Lotte","Bram","Julia","Sem",
-  "Fleur","Milan","Eva","Thijs","Roos","Sven","Iris"
-];
-const TEST_PROFILE_DATA = {
-  eten:      ["pizza","patat met mayo","spaghetti","sushi","pannenkoeken","frikandellen","broodje kroket","lasagne","tosti","poffertjes","kroketten","loempia's","stamppot","ravioli","taco's"],
-  muziek:    ["Metallica","Taylor Swift","Nederlandstalige hits","K3","Eminem","Billie Eilish","Frans Bauer","Rammstein","Ariana Grande","Kensington","Ed Sheeran","Snelle","Doja Cat","Guus Meeuwis","Imagine Dragons"],
-  film:      ["Harry Potter","Frozen","Star Wars","De Marvel-films","Camping Kids","Wickie de Viking","How to Train Your Dragon","Fast & Furious","Minions","Sonic the Hedgehog","De Efteling-film","Shrek","Jumanji","Paw Patrol de film","Kung Fu Panda"],
-  huisdier:  ["een hond","twee katten","een konijn","geen huisdier","een hamster","kippen","een cavia","een papegaai","vissen","een cavia en een hond","een schildpad","twee honden","een rat","geen huisdier","een pony"],
-  hobby:     ["voetballen","tekenen","gamen","paardrijden","muziek maken","skaten","lezen","zwemmen","dansen","hockeyen","knutselen","turnen","fotograferen","judo","basketballen"],
-  vak:       ["gym","rekenen","tekenen","aardrijkskunde","biologie","muziek","geschiedenis","Engels","natuurkunde","handvaardigheid","Nederlands","scheikunde","wiskunde","drama","informatica"],
-  vakantie:  ["Zweden","Amerika","Bali","Frankrijk","Noorwegen","Spanje","IJsland","Griekenland","Japan","Canada","Portugal","Kroatië","Nieuw-Zeeland","Italië","Zuid-Afrika"],
-  bijnaam:   ["Sanneke","D-man","Noortje","Finnegan","Lot","Brammetje","Juul","Semmie","Fleurtje","Milantje","Eef","Thijsie","Roosje","Svenneke","Iriske"]
-};
-const TEST_DAY_GAMES = [
-  "het touwtrekken","de schatzoektocht","het boogschieten","de kanovaartocht",
-  "de estafetterace","het bijltje werpen","de vlaggenroof","het levende ganzenbord"
-];
+// // ---------- TESTOMGEVING AANMAKEN ----------
+// const TEST_PLAYER_NAMES = [
+//   "Sanne","Daan","Noor","Finn","Lotte","Bram","Julia","Sem",
+//   "Fleur","Milan","Eva","Thijs","Roos","Sven","Iris"
+// ];
+// const TEST_PROFILE_DATA = {
+//   eten:      ["pizza","patat met mayo","spaghetti","sushi","pannenkoeken","frikandellen","broodje kroket","lasagne","tosti","poffertjes","kroketten","loempia's","stamppot","ravioli","taco's"],
+//   muziek:    ["Metallica","Taylor Swift","Nederlandstalige hits","K3","Eminem","Billie Eilish","Frans Bauer","Rammstein","Ariana Grande","Kensington","Ed Sheeran","Snelle","Doja Cat","Guus Meeuwis","Imagine Dragons"],
+//   film:      ["Harry Potter","Frozen","Star Wars","De Marvel-films","Camping Kids","Wickie de Viking","How to Train Your Dragon","Fast & Furious","Minions","Sonic the Hedgehog","De Efteling-film","Shrek","Jumanji","Paw Patrol de film","Kung Fu Panda"],
+//   huisdier:  ["een hond","twee katten","een konijn","geen huisdier","een hamster","kippen","een cavia","een papegaai","vissen","een cavia en een hond","een schildpad","twee honden","een rat","geen huisdier","een pony"],
+//   hobby:     ["voetballen","tekenen","gamen","paardrijden","muziek maken","skaten","lezen","zwemmen","dansen","hockeyen","knutselen","turnen","fotograferen","judo","basketballen"],
+//   vak:       ["gym","rekenen","tekenen","aardrijkskunde","biologie","muziek","geschiedenis","Engels","natuurkunde","handvaardigheid","Nederlands","scheikunde","wiskunde","drama","informatica"],
+//   vakantie:  ["Zweden","Amerika","Bali","Frankrijk","Noorwegen","Spanje","IJsland","Griekenland","Japan","Canada","Portugal","Kroatië","Nieuw-Zeeland","Italië","Zuid-Afrika"],
+//   bijnaam:   ["Sanneke","D-man","Noortje","Finnegan","Lot","Brammetje","Juul","Semmie","Fleurtje","Milantje","Eef","Thijsie","Roosje","Svenneke","Iriske"]
+// };
+// const TEST_DAY_GAMES = [
+//   "het touwtrekken","de schatzoektocht","het boogschieten","de kanovaartocht",
+//   "de estafetterace","het bijltje werpen","de vlaggenroof","het levende ganzenbord"
+// ];
 
-function showSeedTestData(){
-  render(`
-    ${topbar("Testomgeving aanmaken", "showAdminHome")}
-    <div class="card">
-      <h2>🧪 Weet je het zeker?</h2>
-      <p>Dit vult de database met:</p>
-      <ul class="small" style="line-height:1.7;">
-        <li>15 voorbeeldspelers met ingevulde mollicitaties</li>
-        <li>Een vragenbank op basis van hun antwoorden</li>
-        <li><strong>Alle 6 dagen</strong>: elk afgerond, met een eigen (geheime) Mol en ingeleverde testresultaten van alle 15 spelers — ideaal om scorebord en onthulscherm meteen volledig te testen</li>
-      </ul>
-      <p class="small" style="color:#e08a72;">Let op: bestaande spelers, vragen en dagen worden hierbij overschreven.</p>
-      <button class="full" style="margin-top:10px" onclick="confirmSeedTestData()">🧪 Ja, testomgeving aanmaken</button>
-      <button class="secondary full" onclick="showAdminHome()">Annuleer</button>
-    </div>
-  `);
-}
+// function showSeedTestData(){
+//   render(`
+//     ${topbar("Testomgeving aanmaken", "showAdminHome")}
+//     <div class="card">
+//       <h2>🧪 Weet je het zeker?</h2>
+//       <p>Dit vult de database met:</p>
+//       <ul class="small" style="line-height:1.7;">
+//         <li>15 voorbeeldspelers met ingevulde mollicitaties</li>
+//         <li>Een vragenbank op basis van hun antwoorden</li>
+//         <li><strong>Alle 6 dagen</strong>: elk afgerond, met een eigen (geheime) Mol en ingeleverde testresultaten van alle 15 spelers — ideaal om scorebord en onthulscherm meteen volledig te testen</li>
+//       </ul>
+//       <p class="small" style="color:#e08a72;">Let op: bestaande spelers, vragen en dagen worden hierbij overschreven.</p>
+//       <button class="full" style="margin-top:10px" onclick="confirmSeedTestData()">🧪 Ja, testomgeving aanmaken</button>
+//       <button class="secondary full" onclick="showAdminHome()">Annuleer</button>
+//     </div>
+//   `);
+// }
 
 async function confirmSeedTestData(){
   render(`<div class="loading">Testomgeving wordt aangemaakt (15 spelers, 6 dagen)...</div>`);
