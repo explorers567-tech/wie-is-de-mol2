@@ -988,29 +988,29 @@ async function confirmResetDatabase(){
 }
 
 // ---------- ROOD / GROEN ONTHULSCHERM ----------
-function showIntroReveal(color, playerName){
+// function showIntroReveal(color, playerName){
 
-    const img = color === "green"
-        ? VIKING_IMG.win2
-        : VIKING_IMG.lose2;
+//     const img = color === "green"
+//         ? VIKING_IMG.win2
+//         : VIKING_IMG.lose2;
 
-    const div = document.createElement("div");
-    div.className = "reveal-screen " + color;
+//     const div = document.createElement("div");
+//     div.className = "reveal-screen " + color;
 
-    div.innerHTML = `
-        <img class="reveal-portrait"
-             src="${img}"
-             alt=""
-             style="width:100vw;height:100vh;object-fit:cover;">
-    `;
+//     div.innerHTML = `
+//         <img class="reveal-portrait"
+//              src="${img}"
+//              alt=""
+//              style="width:100vw;height:100vh;object-fit:cover;">
+//     `;
 
-    document.body.appendChild(div);
+//     document.body.appendChild(div);
 
-    setTimeout(() => {
-        div.remove();
-        showReveal(color, playerName);
-    }, 3000);
-}
+//     setTimeout(() => {
+//         div.remove();
+//         showReveal(color, playerName);
+//     }, 3000);
+// }
 
 async function showRevealScreen(){
   render(`
@@ -1096,9 +1096,9 @@ async function checkPlayerResult(day){
   }
 
   if(player.id === result.loser.id){
-    showIntroReveal("red", player.name);
+    showReveal("red", player.name);
   }else{
-    showIntroReveal("green", player.name);
+    showReveal("green", player.name);
   }
 }
 
