@@ -988,24 +988,24 @@ async function confirmResetDatabase(){
 }
 
 // ---------- ROOD / GROEN ONTHULSCHERM ----------
-function showIntroRevealScreen(color, playerName){
+// function showIntroRevealScreen(color, playerName){
 
-    const img = color === "green"
-        ? "images/win.png"
-        : "images/lost.png";
+//     const img = color === "green"
+//         ? "images/win.png"
+//         : "images/lost.png";
 
-    render(`
-        <div class="reveal-screen ${color}">
-            <img src="${img}"
-                 style="max-width:100%;max-height:100vh;">
-        </div>
-    `);
+//     render(`
+//         <div class="reveal-screen ${color}">
+//             <img src="${img}"
+//                  style="max-width:100%;max-height:100vh;">
+//         </div>
+//     `);
 
-    setTimeout(()=>{
-        showRevealScreen(color, playerName);
-    },3000);
+//     setTimeout(()=>{
+//         showRevealScreen(color, playerName);
+//     },3000);
 
-}
+// }
 
 async function showRevealScreen(){
   render(`
@@ -1043,7 +1043,7 @@ Kies van welke dag je de uitslag wilt tonen.
 
 async function showAutoRevealScreen(day){
   render(`
-    $topbar("Onthulscherm — Optie 1", "showRevealScreen")
+    $topbar("Onthulscherm — Optie 1", "showRevealScreen")}
     <div class="card">
       <h2>🟢🔴 Automatische uitslag</h2>
       <p class="small">Typ de naam van de speler in. Op basis van de laatst afgesloten dag wordt automatisch bepaald of het scherm rood of groen wordt.</p>
@@ -1096,9 +1096,9 @@ async function checkPlayerResult(day){
   }
 
   if(player.id === result.loser.id){
-    showRevealScreen("red", player.name);
+    showReveal("red", player.name);
   } else {
-    showRevealScreen("green", player.name);
+    showReveal("green", player.name);
   }
 }
 
@@ -1144,13 +1144,13 @@ if(!dayInfo.closed){
       <p class="small">Op basis van de testresultaten van dag ${d} heeft de site berekend wie er verloren heeft:</p>
       <p style="font-size:22px;color:var(--red)"><strong>${esc(result.loser.name)}</strong></p>
       <p class="small">${result.loser.score} punten — ${(result.loser.time/1000).toFixed(1)}s</p>
-      <button class="full danger" onclick="showRevealScreen('red','${esc(result.loser.name).replace(/'/g,"\\'")}')">Toon rood scherm</button>
+      <button class="full danger" onclick="showReveal('red','${esc(result.loser.name).replace(/'/g,"\\'")}')">Toon rood scherm</button>
       <button class="secondary full" onclick="showManualLoserScreen('${d}')">↻ Opnieuw berekenen</button>
     </div>
   `);
 }
 
-function showRevealScreen(color, nameOverride){
+function showReveal(color, nameOverride){
   const isGreen = color === "green";
   const imgUrl = isGreen ? VIKING_IMG.win : VIKING_IMG.lose;
 
