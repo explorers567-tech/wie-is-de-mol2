@@ -1082,12 +1082,6 @@ async function checkPlayerResult(day){
   const d = day;
 
   // Check whether this day has been closed
-  const dayInfo = await getDay(d);
-
-  if(!dayInfo.closed){
-    alert(`Dag ${d} is nog niet afgesloten.`);
-    return;
-  }
 
   const result = await computeDayResults(d);
 
