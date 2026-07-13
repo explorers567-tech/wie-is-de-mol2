@@ -8,22 +8,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
 <style>
-/* :root{
-  --wood-dark:#1c130d;
-  --wood:#2e2114;
-  --wood-light:#4a3520;
-  --parchment:#f2e4c8;
-  --parchment-dark:#e3d2a3;
-  --gold:#d99a3e;
-  --gold-light:#f2c46d;
-  --steel:#8f9aa6;
-  --steel-light:#c7d0d8;
-  --red:#8a2c20;
-  --green:#3a5a30;
-  --ink:#f0e6d2;
-  --ink-dark:#2a1f14;
-  --shadow:rgba(0,0,0,.55);
-} */
 :root{
 
 --bg:#000000;
@@ -1112,9 +1096,9 @@ async function checkPlayerResult(day){
   }
 
   if(player.id === result.loser.id){
-    showIntroReveal("red", player.name);
+    showReveal("red", player.name);
   } else {
-    showIntroReveal("green", player.name);
+    showReveal("green", player.name);
   }
 }
 
