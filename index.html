@@ -1062,12 +1062,9 @@ async function showAutoRevealScreen(day){
 }
 
 async function checkPlayerResult(day){
-  const dayInfo = await getDay(d);
-  if(!dayInfo.closed){
-    alert(`Dag ${d} is nog niet afgesloten.`);
-    return;
-}
+
   const input = document.getElementById("revealNameInput").value.trim().toLowerCase();
+
   if(!input){
     alert("Voer een naam in.");
     return;
@@ -1080,11 +1077,15 @@ async function checkPlayerResult(day){
     alert("Speler niet gevonden.");
     return;
   }
-  
+
+  // Use the selected day
   const d = day;
-  
-  if(!d){
-    alert("Er is nog geen afgesloten dag.");
+
+  // Check whether this day has been closed
+  const dayInfo = await getDay(d);
+
+  if(!dayInfo.closed){
+    alert(`Dag ${d} is nog niet afgesloten.`);
     return;
   }
 
@@ -1096,9 +1097,9 @@ async function checkPlayerResult(day){
   }
 
   if(player.id === result.loser.id){
-    showReveal("red", player.name);
-  } else {
-    showReveal("green", player.name);
+    showIntroReveal("red", player.name);
+  }else{
+    showIntroReveal("green", player.name);
   }
 }
 
