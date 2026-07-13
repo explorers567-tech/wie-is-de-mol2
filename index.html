@@ -841,7 +841,7 @@ async function showAdminHome(){
       <button class="full" onclick="showManageBank()">📚 Vragenbank (handmatig)</button>
       <button class="full" onclick="showManageDays()">📅 Dagen instellen (Mol + vragen)</button>
       <button class="full" onclick="showAdminScoreboard()">🏆 Scorebord & uitslag</button>
-      <button class="full" style="background:linear-gradient(180deg,#4a9e4a,#2d6e2d);color:#fff;border-color:#1a4d1a;" onclick="showIntroRevealScreen()">🟢🔴 Rood/Groen onthulscherm</button>
+      <button class="full" style="background:linear-gradient(180deg,#4a9e4a,#2d6e2d);color:#fff;border-color:#1a4d1a;" onclick="showRevealScreen()">🟢🔴 Rood/Groen onthulscherm</button>
     </div>
     <div class="card" style="border-color:var(--red);">
       <h2 style="border-color:var(--red);color:#e08a72;">⚠️ Gevarenzone</h2>
@@ -1040,12 +1040,18 @@ Kies van welke dag je de uitslag wilt tonen.
       <div class="qlist-item">
         <strong>Optie 1 — Naam intypen, automatische uitslag</strong>
         <p class="small">Typ de naam van een speler in. Op basis van de testresultaten van de laatst afgesloten dag verschijnt automatisch een groen scherm (door naar volgende dag) of een rood scherm (minste vragen goed).</p>
-        <button onclick="showAutoRevealScreen(document.getElementById('revealDay').value)">
+        <button class="full"
+        onclick="showAutoRevealScreen(document.getElementById('revealDay').value)">
+        Kies optie 1
+        </button>
       </div>
       <div class="qlist-item">
         <strong>Optie 2 — Snelle versie</strong>
         <p class="small">Geen naam intypen nodig: de site berekent zelf, op basis van de testresultaten, wie er die dag heeft verloren, en toont met één druk op de knop het rode scherm voor dat kind.</p>
-        <button onclick="showManualLoserScreen(document.getElementById('revealDay').value)">
+        <button class="full"
+        onclick="showManualLoserScreen(document.getElementById('revealDay').value)">
+        Kies optie 2
+        </button>
       </div>
     </div>
   `);
@@ -1053,7 +1059,7 @@ Kies van welke dag je de uitslag wilt tonen.
 
 async function showAutoRevealScreen(day){
   render(`
-    ${topbar("Onthulscherm — Optie 1", "showIntroReveal")}
+    $topbar("Onthulscherm — Optie 1", "showRevealScreen")
     <div class="card">
       <h2>🟢🔴 Automatische uitslag</h2>
       <p class="small">Typ de naam van de speler in. Op basis van de laatst afgesloten dag wordt automatisch bepaald of het scherm rood of groen wordt.</p>
@@ -1067,11 +1073,16 @@ async function showAutoRevealScreen(day){
   `);
   setTimeout(()=>{
     const inp = document.getElementById("revealNameInput");
-    if(inp) inp.addEventListener("keydown", e=>{ if(e.key==="Enter") checkPlayerResult(); });
+    if(inp) inp.addEventListener("keydown", e=>{ if(e.key==="Enter") checkPlayerResult(day); });
   }, 50);
 }
 
 async function checkPlayerResult(day){
+  const dayInfo = await getDay(d);
+  if(!dayInfo.closed){
+    alert(`Dag ${d} is nog niet afgesloten.`);
+    return;
+}
   const input = document.getElementById("revealNameInput").value.trim().toLowerCase();
   if(!input){
     alert("Voer een naam in.");
@@ -1117,7 +1128,7 @@ const dayInfo = await getDay(d);
 
 if(!dayInfo.closed){
     render(`
-      ${topbar("Onthulscherm — Optie 2", "showIntroReveal")}
+      ${topbar("Onthulscherm — Optie 2", "showReveal")}
       <div class="card">
         <p>Dag ${d} is nog niet afgesloten.</p>
       </div>
@@ -1127,7 +1138,7 @@ if(!dayInfo.closed){
 
   if(!d){
     render(`
-      ${topbar("Onthulscherm — Optie 2", "showIntroReveal")}
+      ${topbar("Onthulscherm — Optie 2", "showReveal")}
       <div class="card"><p class="small">Er is nog geen dag afgesloten. Bevestig eerst de Mol-uitslag van een dag bij "Dagen instellen", dan kan de site berekenen wie er heeft verloren.</p></div>
     `);
     return;
@@ -1136,21 +1147,21 @@ if(!dayInfo.closed){
   const result = await computeDayResults(d);
   if(!result){
     render(`
-      ${topbar("Onthulscherm — Optie 2", "showIntroReveal")}
+      ${topbar("Onthulscherm — Optie 2", "showReveal")}
       <div class="card"><p class="small">Voor dag ${d} zijn nog geen (geldige) inzendingen om een uitslag op te baseren.</p></div>
     `);
     return;
   }
 
   render(`
-    ${topbar("Onthulscherm — Optie 2", "showIntroReveal")}
+    ${topbar("Onthulscherm — Optie 2", "showReveal")}
     <div class="card center">
       <h2>🔴 Snelle uitslag — automatisch berekend</h2>
       <p class="small">Op basis van de testresultaten van dag ${d} heeft de site berekend wie er verloren heeft:</p>
       <p style="font-size:22px;color:var(--red)"><strong>${esc(result.loser.name)}</strong></p>
       <p class="small">${result.loser.score} punten — ${(result.loser.time/1000).toFixed(1)}s</p>
-      <button class="full danger" onclick="showIntroReveal('red','${esc(result.loser.name).replace(/'/g,"\\'")}')">Toon rood scherm</button>
-      <button class="secondary full" onclick="showManualLoserScreen()">↻ Opnieuw berekenen</button>
+      <button class="full danger" onclick="showReveal('red','${esc(result.loser.name).replace(/'/g,"\\'")}')">Toon rood scherm</button>
+      <button class="secondary full" onclick="showManualLoserScreen('${d}')">↻ Opnieuw berekenen</button>
     </div>
   `);
 }
