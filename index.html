@@ -1009,22 +1009,30 @@ async function showRevealScreen(){
     ${topbar("Onthulscherm", "showAdminHome")}
     <div class="card">
       <h2>🟢🔴 Uitslagronde</h2>
+      <label>Kies dag</label>
+<select id="revealDay">
+  ${DAYS.map(day => `<option value="${day}">${day}</option>`).join("")}
+</select>
+
+<p class="small">
+Kies van welke dag je de uitslag wilt tonen.
+</p>
       <p class="small">Kies hoe je de uitslag wilt onthullen aan de Vikingen.</p>
       <div class="qlist-item">
         <strong>Optie 1 — Naam intypen, automatische uitslag</strong>
         <p class="small">Typ de naam van een speler in. Op basis van de testresultaten van de laatst afgesloten dag verschijnt automatisch een groen scherm (door naar volgende dag) of een rood scherm (minste vragen goed).</p>
-        <button class="full" onclick="showAutoRevealScreen()">Kies optie 1</button>
+        <button onclick="showAutoRevealScreen(document.getElementById('revealDay').value)">
       </div>
       <div class="qlist-item">
         <strong>Optie 2 — Snelle versie</strong>
         <p class="small">Geen naam intypen nodig: de site berekent zelf, op basis van de testresultaten, wie er die dag heeft verloren, en toont met één druk op de knop het rode scherm voor dat kind.</p>
-        <button class="full" onclick="showManualLoserScreen()">Kies optie 2</button>
+        <button onclick="showManualLoserScreen(document.getElementById('revealDay').value)">
       </div>
     </div>
   `);
 }
 
-async function showAutoRevealScreen(){
+async function showAutoRevealScreen(day){
   render(`
     ${topbar("Onthulscherm — Optie 1", "showRevealScreen")}
     <div class="card">
@@ -1033,7 +1041,7 @@ async function showAutoRevealScreen(){
       <label>Naam speler</label>
       <input type="text" id="revealNameInput" placeholder="Bijv. Jan">
 
-      <button class="full" style="margin-top:16px" onclick="checkPlayerResult()">
+      <button class="full" style="margin-top:16px" onclick="checkPlayerResult('${day}')">
         Toon uitslag
       </button>
     </div>
@@ -1044,7 +1052,7 @@ async function showAutoRevealScreen(){
   }, 50);
 }
 
-async function checkPlayerResult(){
+async function checkPlayerResult(day){
   const input = document.getElementById("revealNameInput").value.trim().toLowerCase();
   if(!input){
     alert("Voer een naam in.");
@@ -1058,16 +1066,9 @@ async function checkPlayerResult(){
     alert("Speler niet gevonden.");
     return;
   }
-
-  let d = null;
-  for(let i = DAYS.length - 1; i >= 0; i--){
-    const day = await getDay(DAYS[i]);
-    if(day.closed){
-      d = DAYS[i];
-      break;
-    }
-  }
-
+  
+  const d = day;
+  
   if(!d){
     alert("Er is nog geen afgesloten dag.");
     return;
@@ -1088,18 +1089,22 @@ async function checkPlayerResult(){
 }
 
 // ---------- OPTIE 2: SNELLE VERSIE — SITE BEREKENT ZELF WIE ER HEEFT VERLOREN ----------
-async function showManualLoserScreen(){
+async function showManualLoserScreen(day){
   render(`<div class="loading">Uitslag berekenen...</div>`);
 
   // Zoek de laatst afgesloten (bevestigde) dag
-  let d = null;
-  for(let i = DAYS.length - 1; i >= 0; i--){
-    const day = await getDay(DAYS[i]);
-    if(day.closed){
-      d = DAYS[i];
-      break;
-    }
-  }
+const d = day;
+const dayInfo = await getDay(d);
+
+if(!dayInfo.closed){
+    render(`
+      ${topbar("Onthulscherm — Optie 2", "showRevealScreen")}
+      <div class="card">
+        <p>Dag ${d} is nog niet afgesloten.</p>
+      </div>
+    `);
+    return;
+}
 
   if(!d){
     render(`
