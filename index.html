@@ -190,7 +190,11 @@ background-size:100% 4px;
   <div id="content"><div class="loading">Het noodlot wordt geraadpleegd...</div></div>
 </div>
 <script>
-const PIN = "1066";
+
+async function sha256Hex(str){
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+}
 
 // ---------- VIKING-ILLUSTRATIES (episch fantasy-artwork, aangeleverd door de organisatie) ----------
 // "win" = gouden/triomfantelijke sfeer voor het groene scherm & dagwinnaar
@@ -809,10 +813,17 @@ async function showAdminLogin(){
     if(inp){ inp.focus(); inp.addEventListener("keydown", e=>{ if(e.key==="Enter") checkPin(); }); }
   }, 50);
 }
-function checkPin(){
+
+async function checkPin(){
   const v = document.getElementById("pinInput").value;
-  if(v===PIN){ isAdmin=true; showAdminHome(); }
-  else { alert("Onjuiste PIN."); }
+  const enteredHash = await sha256Hex(v);
+  const storedHash = await sGet("admin/pinHash");
+  if(storedHash && enteredHash === storedHash){
+    isAdmin = true;
+    showAdminHome();
+  } else {
+    alert("Onjuiste PIN.");
+  }
 }
 
 async function showAdminHome(){
