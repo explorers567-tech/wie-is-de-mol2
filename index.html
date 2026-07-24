@@ -206,7 +206,12 @@ const VIKING_IMG = {
 };
 
 const POINTS_PER_Q = 10;
-const DAYS = [1,2,3,4,5,6];
+let NUM_DAYS = 6;
+function getDays(){ return Array.from({length: NUM_DAYS}, (_,i)=>i+1); }
+async function loadNumDays(){
+  const n = await sGet("config/numDays");
+  NUM_DAYS = (typeof n === "number" && n >= 1 && n <= 10) ? n : 6;
+}
 let me = null;
 let isAdmin = false;
 let quizState = null;
@@ -331,6 +336,7 @@ function topbar(title, backFn){
 
 // ---------- START ----------
 async function showStart(){
+  await loadNumDays();
   isAdmin = false; me = null;
   render(`
     <div class="card center">
@@ -462,7 +468,7 @@ async function submitProfileIntake(){
 async function showPlayerHome(){
   render(`<div class="loading">Overzicht laden...</div>`);
   let rows = "";
-  for(const d of DAYS){
+  for(const d of getDays()){
     const day = await getDay(d);
     const ans = await getAnswer(d, me.id);
     let status, action;
@@ -478,6 +484,9 @@ async function showPlayerHome(){
     }
     rows += `<div class="qlist-item flex-between"><div><strong>Dag ${d}</strong><br>${status}</div>${action}</div>`;
   }
+  
+const beadsInfo = await getBeadsTotals();
+  
   render(`
     ${topbar("Speler: "+me.name, "showStart")}
     <div class="card">
@@ -488,8 +497,17 @@ async function showPlayerHome(){
       <p class="small">De uitslag wordt geheim gehouden en vanavond onthuld door de Super toffe Begeleiding tijdens de test en executie. Veel succes, Viking!</p>
     </div>
   `);
+  day.beads = [{name, max, won}, ...]
 }
 
+async function getBeadsTotals(){
+  let maxTotal = 0, wonTotal = 0;
+  for(const d of getDays()){
+    const day = await getDay(d);
+    (day.beads||[]).forEach(b=>{ maxTotal += (b.max||0); wonTotal += (b.won||0); });
+  }
+  return {maxTotal, wonTotal};
+}
 // ---------- QUIZ FLOW ----------
 // ---------- MOL-VRAGEN DYNAMISCH OPBOUWEN ----------
 // Voor elke door de begeleiding gekozen categorie (bijv. "Haarkleur") wordt één vraag gemaakt
@@ -721,7 +739,7 @@ async function computeScoreboard(){
   const totals = {};
   players.forEach(p=>totals[p.id]={id:p.id, name:p.name, points:0, time:0, molDays:[], dayScores:{}});
 
-  for(const d of DAYS){
+  for(const d of getDays()){
     const day = await getDay(d);
     const dayScores = {};
     let maxForDay = 0;
@@ -831,6 +849,7 @@ async function showAdminHome(){
     ${topbar("Super toffe Begeleiding", "showStart")}
     <div class="card">
       <h2>Beheer</h2>
+      <button class="full" onclick="showDaySettings()">📆 Aantal speeldagen instellen</button>
       <button class="full" onclick="showManagePlayers()">👥 Spelers beheren</button>
       <button class="full" onclick="showManageProfiles()">📝 Mollicitatie-antwoorden bekijken</button>
       <button class="full" onclick="showManageBank()">📚 Vragenbank (handmatig)</button>
@@ -843,6 +862,11 @@ async function showAdminHome(){
       <p class="small">Wil je met een nieuwe groep opnieuw beginnen? Reset hieronder de hele database in één keer.</p>
       <button class="full danger" onclick="showResetDatabase()">🗑️ Database volledig resetten</button>
     </div>
+    <div class="card center">
+  <h2>🔵 Kralen van het kamp</h2>
+  <p style="font-size:22px"><strong>${beadsInfo.wonTotal}</strong> / ${beadsInfo.maxTotal}</p>
+  <p class="small">Gewonnen tijdens de spellen tot nu toe</p>
+</div>
   `);
 }
 
@@ -1336,7 +1360,7 @@ async function removeBankQ(id){
 // ---------- DAGEN ----------
 async function showManageDays(){
   render(`<div class="loading">Laden...</div>`);
-  let btns = DAYS.map(d=>`<button onclick="showManageDay(${d})">Dag ${d}</button>`).join("");
+  let btns = getDays().map(d=>`<button onclick="showManageDay(${d})">Dag ${d}</button>`).join("");
   render(`
     ${topbar("Dagen", "showAdminHome")}
     <div class="card">
@@ -1346,6 +1370,85 @@ async function showManageDays(){
   `);
 }
 
+async function showFinalWinner(){
+  const ranking = await computeScoreboard();
+  const winner = ranking[0];
+  render(`
+    ${topbar("Eindwinnaar", "showAdminScoreboard")}
+    <div class="card center">
+      <h2>🏆 All-time winnaar van het kamp</h2>
+      <div class="winner-box">
+        <div class="trophy"><img src="${VIKING_IMG.win}"></div>
+        <strong style="font-size:22px">${esc(winner.name)}</strong><br>
+        <span class="small">${winner.points} punten in totaal</span>
+      </div>
+    </div>
+  `);
+}  
+
+async function showManageBeads(d){
+  const day = await getDay(d);
+  const beads = day.beads || [];
+  let rowsHtml = "";
+  for(let i=0;i<4;i++){
+    const b = beads[i] || {name:"", max:0, won:0};
+    rowsHtml += `
+      <div class="qlist-item">
+        <label>Spel ${i+1}</label>
+        <input type="text" id="bead_name_${i}" value="${esc(b.name)}" placeholder="Naam van het spel">
+        <div class="row" style="margin-top:6px">
+          <div style="flex:1"><label>Max. te winnen</label><input type="number" min="0" id="bead_max_${i}" value="${b.max}"></div>
+          <div style="flex:1"><label>Daadwerkelijk gewonnen</label><input type="number" min="0" id="bead_won_${i}" value="${b.won}"></div>
+        </div>
+      </div>`;
+  }
+  render(`
+    ${topbar("Kralen dag "+d, "showManageDays")}
+    <div class="card">
+      <h2>🔵 Kralen — dag ${d}</h2>
+      ${rowsHtml}
+      <button class="full" style="margin-top:10px" onclick="saveBeads(${d})">Opslaan</button>
+    </div>
+  `);
+}
+async function saveBeads(d){
+  const day = await getDay(d);
+  const beads = [];
+  for(let i=0;i<4;i++){
+    const name = document.getElementById("bead_name_"+i).value.trim();
+    if(!name) continue;
+    beads.push({
+      name,
+      max: parseInt(document.getElementById("bead_max_"+i).value)||0,
+      won: parseInt(document.getElementById("bead_won_"+i).value)||0
+    });
+  }
+  day.beads = beads;
+  await setDay(d, day);
+  showManageDay(d);
+}
+  
+  async function showDaySettings(){
+  await loadNumDays();
+  render(`
+    ${topbar("Aantal speeldagen", "showAdminHome")}
+    <div class="card">
+      <h2>Hoeveel dagen spelen jullie dit kamp?</h2>
+      <select id="numDaysSelect">
+        ${[4,5,6].map(n=>`<option value="${n}" ${NUM_DAYS===n?"selected":""}>${n} dagen</option>`).join("")}
+      </select>
+      <button class="full" style="margin-top:12px" onclick="saveNumDays()">Opslaan</button>
+    </div>
+  `);
+}
+async function saveNumDays(){
+  const n = parseInt(document.getElementById("numDaysSelect").value);
+  await sSet("config/numDays", n);
+  NUM_DAYS = n;
+  showAdminHome();
+}
+
+  
 async function showManageDay(d){
   render(`<div class="loading">Dag ${d} laden...</div>`);
   const day = await getDay(d);
@@ -1396,6 +1499,7 @@ async function showManageDay(d){
         <button onclick="setDayOpen(${d}, true)">Open voor spelers</button>
         <button class="secondary" onclick="setDayOpen(${d}, false)">Sluit test</button>
         <button class="danger" onclick="closeDayScoring(${d})">Bevestig Mol-uitslag</button>
+        <button class="full" onclick="showManageBeads(${d})">🔵 Kralen invullen</button>
       </div>
       <p class="small">"Bevestig Mol-uitslag" pas indrukken als iedereen heeft gespeeld — daarna telt de Mol-bonus mee en verschijnen de dag-uitslag en ranglijst.</p>
     </div>
