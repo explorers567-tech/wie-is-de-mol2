@@ -1,9 +1,7 @@
-let failedPinAttempts=0;
-
-let pinBlockedUntil=0;
+let failedPinAttempts = 0;
 
 let pinBlockedUntil =
-    Number(localStorage.getItem("pinBlockedUntil")||0);
+    Number(localStorage.getItem("pinBlockedUntil") || 0);
 
 async function sha256Hex(str){
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
@@ -646,17 +644,18 @@ async function showAdminLogin(){
   }, 50);
 }
 
-async function checkPin() 
-if(Date.now()<pinBlockedUntil){
 
-    const sec=Math.ceil((pinBlockedUntil-Date.now())/1000);
+async function checkPin() {
 
-    alert("Te veel pogingen. Wacht "+sec+" seconden.");
+    if (Date.now() < pinBlockedUntil) {
+        const sec = Math.ceil((pinBlockedUntil - Date.now()) / 1000);
+        alert("Te veel pogingen. Wacht " + sec + " seconden.");
+        return;
+    }
 
-    return;
-
+    // rest van de functie...
 }
-{
+
   const v = document.getElementById("pinInput").value;
 
   const enteredHash = await sha256Hex(v);
@@ -1582,11 +1581,6 @@ function saveSetup(){
   localStorage.setItem("mol_firebase_url", v);
   showStart();
 }
-
-localStorage.setItem(
-    "pinBlockedUntil",
-    Date.now()+5*60*1000
-);
 
 // ---------- START APP ----------
 showStart();
