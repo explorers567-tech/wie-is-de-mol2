@@ -660,6 +660,7 @@ async function checkPin() {
 }
 
 async function showAdminHome(){
+  const beadsInfo = await getBeadsTotals();
   render(`
     ${topbar("Super toffe Begeleiding", "showStart")}
     <div class="card">
@@ -1492,5 +1493,3 @@ function saveSetup(){
 
 // ---------- START APP ----------
 showStart();
-
-// Tijdelijk: één keer uitvoeren om de admin-PIN in te stellen
