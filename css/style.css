@@ -1,14 +1,28 @@
 <style>
 :root{
+  --bg:#000000;
+  --panel:#081108;
+  --panel-light:#102410;
+  --green:#00ff66;
+  --green-dark:#009944;
+  --red:#ff0033;
+  --text:#8dff8d;
+  --border:#00aa44;
 
---bg:#000000;
---panel:#081108;
---panel-light:#102410;
---green:#00ff66;
---green-dark:#009944;
---red:#ff0033;
---text:#8dff8d;
---border:#00aa44;
+  /* Onderstaande waren nergens gedefinieerd, waardoor tekst/kleuren
+     onzichtbaar werden (var(--iets) zonder fallback = ongeldige waarde).
+     Hier alsnog ingevuld, passend bij het groene thema. */
+  --ink:#c8ffd9;          /* hoofdtekstkleur op donkere achtergrond */
+  --ink-dark:#04150a;     /* donkere tekst op lichte invulvelden */
+  --gold:#00ff66;         /* was goud, nu groen accent i.p.v. thema-breuk */
+  --gold-light:#7dffb0;
+  --parchment:#0d1f0f;
+  --parchment-dark:#9dffb8;
+  --wood-light:#00aa44;
+  --wood-dark:#003d1f;
+  --steel-light:#1f3a2a;
+  --steel:#0d1f14;
+  --shadow: rgba(0,255,102,.15);
 }
 .reveal-screen svg{
   filter: drop-shadow(0 6px 16px rgba(0,0,0,0.5));
@@ -21,20 +35,14 @@
 body{
   margin:0;
   font-family:'Trebuchet MS', Verdana, sans-serif;
-  /* background:
-    radial-gradient(ellipse 700px 500px at 50% -10%, rgba(217,154,62,.16), transparent 60%),
-    radial-gradient(circle at 50% 0%, #2a1f16, #0d0a07 72%); */
   background:#000;
-  color:#8dff8d;
   color:var(--ink);
   min-height:100vh;
 }
 #app{max-width:520px;margin:0 auto;padding:16px 16px 60px;}
 .card{
-  /* background:linear-gradient(160deg,#2b2015,#1a130c); */
   background:#081108;
   border:1px solid #00ff66;
-  /* border:1px solid var(--gold); */
   border-radius:10px;
   padding:18px;
   margin-bottom:16px;
@@ -45,7 +53,7 @@ body{
 .card::before{
   content:"";
   position:absolute;inset:6px;
-  border:1px solid rgba(217,154,62,.35);
+  border:1px solid rgba(0,255,102,.35);
   border-radius:6px;
   pointer-events:none;
 }
@@ -56,7 +64,7 @@ h1{
   letter-spacing:1px;
   font-size:24px;
   margin:18px 0 4px;
-  text-shadow:0 2px 10px rgba(217,154,62,.4), 0 2px 4px #000;
+  text-shadow:0 2px 10px rgba(0,255,102,.4), 0 2px 4px #000;
 }
 h1 .rune{color:var(--gold);}
 .subtitle{
@@ -72,12 +80,9 @@ input[type=text], input[type=number], input[type=password], select, textarea{
 }
 textarea{resize:vertical;min-height:50px;}
 button{
-  /* background:linear-gradient(180deg,var(--gold-light),var(--gold));
-  border:1px solid var(--wood-dark); */
   background:#003d1f;
   color:#00ff66;
   border:1px solid #00ff66;
-  /* color:#2a1b09; */
   font-weight:bold;
   padding:10px 16px;
   border-radius:8px;
@@ -85,16 +90,16 @@ button{
   font-size:15px;
   margin:6px 6px 6px 0;
   font-family:inherit;
-  box-shadow:0 3px 0 #7a5218, 0 6px 14px rgba(0,0,0,.4);
+  box-shadow:0 3px 0 #005c2c, 0 6px 14px rgba(0,0,0,.4);
   transition:transform .05s;
 }
-button:active{transform:translateY(2px);box-shadow:0 1px 0 #7a5218;}
-button.secondary{background:linear-gradient(180deg,var(--steel-light),var(--steel));color:#1c2226;box-shadow:0 3px 0 #4c5560, 0 6px 14px rgba(0,0,0,.4);}
+button:active{transform:translateY(2px);box-shadow:0 1px 0 #005c2c;}
+button.secondary{background:linear-gradient(180deg,var(--steel-light),var(--steel));color:var(--ink);box-shadow:0 3px 0 #0a1a10, 0 6px 14px rgba(0,0,0,.4);}
 button.danger{background:linear-gradient(180deg,#c97050,var(--red));color:#fff8ec;box-shadow:0 3px 0 #5c1a12, 0 6px 14px rgba(0,0,0,.4);}
 button.full{width:100%;display:block;margin-left:0;}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
 .pill{
-  display:inline-block;background:var(--wood-light);color:var(--parchment);
+  display:inline-block;background:var(--wood-light);color:var(--ink-dark);
   padding:3px 10px;border-radius:14px;font-size:12px;margin:2px;
 }
 .pill-green{background:var(--green);}
@@ -113,19 +118,19 @@ button.full{width:100%;display:block;margin-left:0;}
 .progress-bar{background:linear-gradient(90deg,var(--green),#5a8a4c);height:100%;transition:width .2s;}
 .timer{font-weight:bold;color:#e08a72;font-size:13px;}
 table{width:100%;border-collapse:collapse;font-size:14px;}
-th,td{padding:6px 8px;text-align:left;border-bottom:1px solid var(--wood-light);}
+th,td{padding:6px 8px;text-align:left;border-bottom:1px solid var(--wood-light);color:var(--ink);}
 th{color:var(--gold-light);font-family:'Cinzel',Georgia,serif;font-size:12px;letter-spacing:.5px;text-transform:uppercase;}
 .rank-1 td{color:var(--gold-light);font-weight:bold;}
 .rank-last td{color:#e08a72;}
 .small{font-size:12px;color:var(--parchment-dark);opacity:.85;}
-.qlist-item{border:1px solid var(--wood-light);border-radius:6px;padding:8px;margin-bottom:6px;background:rgba(0,0,0,.22);}
+.qlist-item{border:1px solid var(--wood-light);border-radius:6px;padding:8px;margin-bottom:6px;background:rgba(0,0,0,.22);color:var(--ink);}
 .flex-between{display:flex;justify-content:space-between;align-items:center;}
 .tag-mol{background:var(--red);color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;}
 .center{text-align:center;}
 .hidden{display:none;}
 .loading{text-align:center;color:var(--parchment-dark);padding:40px;}
 .axe-divider{text-align:center;color:var(--gold);margin:10px 0;letter-spacing:8px;}
-.winner-box{background:linear-gradient(160deg,#332510,#1c1408);border:1px solid var(--gold);border-radius:10px;padding:14px;margin:10px 0;text-align:center;color:var(--ink);box-shadow:0 6px 16px rgba(0,0,0,.4);}
+.winner-box{background:linear-gradient(160deg,#0d2a15,#08160b);border:1px solid var(--gold);border-radius:10px;padding:14px;margin:10px 0;text-align:center;color:var(--ink);box-shadow:0 6px 16px rgba(0,0,0,.4);}
 .loser-box{background:linear-gradient(160deg,#341811,#1c0e0a);border:1px solid var(--red);border-radius:10px;padding:14px;margin:10px 0;text-align:center;color:var(--ink);box-shadow:0 6px 16px rgba(0,0,0,.4);}
 .trophy{display:flex;justify-content:center;margin-bottom:6px;}
 .trophy img{width:70px;height:70px;object-fit:cover;border-radius:50%;border:2px solid var(--gold-light);box-shadow:0 4px 10px rgba(0,0,0,.5);}
