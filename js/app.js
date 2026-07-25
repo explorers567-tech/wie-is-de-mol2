@@ -655,7 +655,7 @@ async function checkPin() {
 
     // rest van de functie...
 }
-
+{
   const v = document.getElementById("pinInput").value;
 
   const enteredHash = await sha256Hex(v);
@@ -666,7 +666,7 @@ async function checkPin() {
   console.log("Hash opgeslagen:", storedHash);
   console.log("Type opgeslagen:", typeof storedHash);
   console.log("Vergelijking:", enteredHash === storedHash);
-
+}
 if(storedHash && enteredHash===storedHash){
 
     failedPinAttempts=0;
