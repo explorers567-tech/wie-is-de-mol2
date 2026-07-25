@@ -1,3 +1,10 @@
+let failedPinAttempts=0;
+
+let pinBlockedUntil=0;
+
+let pinBlockedUntil =
+    Number(localStorage.getItem("pinBlockedUntil")||0);
+
 async function sha256Hex(str){
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
@@ -639,7 +646,17 @@ async function showAdminLogin(){
   }, 50);
 }
 
-async function checkPin() {
+async function checkPin() 
+if(Date.now()<pinBlockedUntil){
+
+    const sec=Math.ceil((pinBlockedUntil-Date.now())/1000);
+
+    alert("Te veel pogingen. Wacht "+sec+" seconden.");
+
+    return;
+
+}
+{
   const v = document.getElementById("pinInput").value;
 
   const enteredHash = await sha256Hex(v);
@@ -651,13 +668,33 @@ async function checkPin() {
   console.log("Type opgeslagen:", typeof storedHash);
   console.log("Vergelijking:", enteredHash === storedHash);
 
-  if (storedHash && enteredHash === storedHash) {
-    isAdmin = true;
+if(storedHash && enteredHash===storedHash){
+
+    failedPinAttempts=0;
+
+    isAdmin=true;
+
     showAdminHome();
-  } else {
-    alert("Onjuiste PIN.");
-  }
+
 }
+else{
+
+    failedPinAttempts++;
+
+    alert("Onjuiste PIN.");
+
+failedPinAttempts++;
+
+if(failedPinAttempts>=5){
+
+    pinBlockedUntil=Date.now()+5*60*1000;
+
+    failedPinAttempts=0;
+
+    alert("5 foutieve pogingen. 5 minuten geblokkeerd.");
+
+}
+}  
 
 async function showAdminHome(){
   const beadsInfo = await getBeadsTotals();
@@ -665,6 +702,7 @@ async function showAdminHome(){
     ${topbar("Super toffe Begeleiding", "showStart")}
     <div class="card">
       <h2>Beheer</h2>
+      <button onclick="showSecuritySettings()"> 🔒 Beveiliging </button>
       <button class="full" onclick="showDaySettings()">📆 Aantal speeldagen instellen</button>
       <button class="full" onclick="showManagePlayers()">👥 Spelers beheren</button>
       <button class="full" onclick="showManageProfiles()">📝 Mollicitatie-antwoorden bekijken</button>
@@ -721,6 +759,24 @@ async function confirmSeedTestData(){
       };
     });
   }
+
+function showSecuritySettings(){
+    app.innerHTML = `
+        <h2>Beveiliging</h2>
+
+        <input id="oldPin" type="password" placeholder="Huidige PIN">
+
+        <input id="newPin1" type="password" placeholder="Nieuwe PIN">
+
+        <input id="newPin2" type="password" placeholder="Herhaal nieuwe PIN">
+
+        <button onclick="changeAdminPin()">PIN wijzigen</button>
+
+        <button onclick="showAdminHome()">Terug</button>
+    `;
+}
+
+
 
   // 5) Elke dag opbouwen: eigen Mol, eigen dagvragen, eigen Mol-vragen, én gesimuleerde
   //    resultaten van alle 15 spelers
@@ -804,6 +860,38 @@ async function showResetDatabase(){
     const inp = document.getElementById("resetConfirmInput");
     if(inp) inp.addEventListener("keydown", e=>{ if(e.key==="Enter") confirmResetDatabase(); });
   }, 50);
+}
+
+async function changeAdminPin(){
+
+    const oldPin=document.getElementById("oldPin").value;
+    const newPin1=document.getElementById("newPin1").value;
+    const newPin2=document.getElementById("newPin2").value;
+
+    if(newPin1!==newPin2){
+        alert("Nieuwe PIN's komen niet overeen.");
+        return;
+    }
+
+    if(newPin1.length<6){
+        alert("Gebruik minimaal 6 tekens.");
+        return;
+    }
+
+    const storedHash=await sGet("admin/pinHash");
+
+    const oldHash=await sha256Hex(oldPin);
+
+    if(oldHash!==storedHash){
+        alert("Huidige PIN is onjuist.");
+        return;
+    }
+
+    const newHash=await sha256Hex(newPin1);
+
+    await sSet("admin/pinHash",newHash);
+
+    alert("PIN gewijzigd.");
 }
 
 async function confirmResetDatabase(){
@@ -1494,6 +1582,11 @@ function saveSetup(){
   localStorage.setItem("mol_firebase_url", v);
   showStart();
 }
+
+localStorage.setItem(
+    "pinBlockedUntil",
+    Date.now()+5*60*1000
+);
 
 // ---------- START APP ----------
 showStart();
