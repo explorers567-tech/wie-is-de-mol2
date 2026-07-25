@@ -1484,3 +1484,11 @@ function saveSetup(){
 
 // ---------- START APP ----------
 showStart();
+
+// Tijdelijk: één keer uitvoeren om de admin-PIN in te stellen
+(async () => {
+    const pin = "1066"; // Kies hier je eigen PIN
+    const hash = await sha256Hex(pin);
+    await sSet("admin/pinHash", hash);
+    alert("Admin PIN ingesteld!");
+})();
