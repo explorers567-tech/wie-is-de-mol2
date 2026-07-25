@@ -644,7 +644,6 @@ async function showAdminLogin(){
   }, 50);
 }
 
-
 async function checkPin() {
 
     if (Date.now() < pinBlockedUntil) {
@@ -653,47 +652,46 @@ async function checkPin() {
         return;
     }
 
-    // rest van de functie...
+    const v = document.getElementById("pinInput").value;
+
+    const enteredHash = await sha256Hex(v);
+    const storedHash = await sGet("admin/pinHash");
+
+    console.log("PIN ingevoerd:", v);
+    console.log("Hash ingevoerd:", enteredHash);
+    console.log("Hash opgeslagen:", storedHash);
+    console.log("Type opgeslagen:", typeof storedHash);
+    console.log("Vergelijking:", enteredHash === storedHash);
+
+    if (storedHash && enteredHash === storedHash) {
+
+        failedPinAttempts = 0;
+
+        isAdmin = true;
+
+        showAdminHome();
+
+    } else {
+
+        failedPinAttempts++;
+
+        if (failedPinAttempts >= 5) {
+
+            pinBlockedUntil = Date.now() + 5 * 60 * 1000;
+
+            localStorage.setItem("pinBlockedUntil", pinBlockedUntil);
+
+            failedPinAttempts = 0;
+
+            alert("5 foutieve pogingen. 5 minuten geblokkeerd.");
+
+        } else {
+
+            alert("Onjuiste PIN.");
+
+        }
+    }
 }
-{
-  const v = document.getElementById("pinInput").value;
-
-  const enteredHash = await sha256Hex(v);
-  const storedHash = await sGet("admin/pinHash");
-
-  console.log("PIN ingevoerd:", v);
-  console.log("Hash ingevoerd:", enteredHash);
-  console.log("Hash opgeslagen:", storedHash);
-  console.log("Type opgeslagen:", typeof storedHash);
-  console.log("Vergelijking:", enteredHash === storedHash);
-}
-if(storedHash && enteredHash===storedHash){
-
-    failedPinAttempts=0;
-
-    isAdmin=true;
-
-    showAdminHome();
-
-}
-else{
-
-    failedPinAttempts++;
-
-    alert("Onjuiste PIN.");
-
-failedPinAttempts++;
-
-if(failedPinAttempts>=5){
-
-    pinBlockedUntil=Date.now()+5*60*1000;
-
-    failedPinAttempts=0;
-
-    alert("5 foutieve pogingen. 5 minuten geblokkeerd.");
-
-}
-}  
 
 async function showAdminHome(){
   const beadsInfo = await getBeadsTotals();
