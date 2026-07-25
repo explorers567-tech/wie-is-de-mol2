@@ -639,42 +639,25 @@ async function showAdminLogin(){
   }, 50);
 }
 
-async function checkPin(){
+async function checkPin() {
   const v = document.getElementById("pinInput").value;
 
   const enteredHash = await sha256Hex(v);
   const storedHash = await sGet("admin/pinHash");
 
-  console.log("Opgeslagen hash:", storedHash);
-  console.log("Ingevoerde hash:", enteredHash);
-  console.log("Gelijk?", storedHash === enteredHash);
+  console.log("PIN ingevoerd:", v);
+  console.log("Hash ingevoerd:", enteredHash);
+  console.log("Hash opgeslagen:", storedHash);
+  console.log("Type opgeslagen:", typeof storedHash);
+  console.log("Vergelijking:", enteredHash === storedHash);
 
-  if(storedHash && enteredHash === storedHash){
+  if (storedHash && enteredHash === storedHash) {
     isAdmin = true;
     showAdminHome();
   } else {
     alert("Onjuiste PIN.");
   }
 }
-
-// async function checkPin(){
-//   const v = document.getElementById("pinInput").value;
-//   const enteredHash = await sha256Hex(v);
-//   const storedHash = await sGet("admin/pinHash");
-// console.log("Opgeslagen hash:", storedHash);
-
-// const enteredHash = await sha256Hex(pin);
-// console.log("Ingevoerde hash:", enteredHash);
-
-// console.log("Gelijk?", storedHash === enteredHash);
-
-//   if(storedHash && enteredHash === storedHash){
-//     isAdmin = true;
-//     showAdminHome();
-//   } else {
-//     alert("Onjuiste PIN.");
-//   }
-// }
 
 async function showAdminHome(){
   render(`
