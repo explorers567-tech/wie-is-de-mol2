@@ -725,7 +725,9 @@ async function confirmSeedTestData(){
   // 5) Elke dag opbouwen: eigen Mol, eigen dagvragen, eigen Mol-vragen, én gesimuleerde
   //    resultaten van alle 15 spelers
   const molNames = [];
-  for(const d of DAYS){
+  
+  for(const d of getDays()){
+
     const dayQuestions = makeDayQuestions();
     const molPlayer = players[(d - 1) % players.length];
     molNames.push(`Dag ${d}: ${molPlayer.name}`);
@@ -869,8 +871,9 @@ async function showRevealScreen(){
     <div class="card">
       <h2>🟢🔴 Uitslagronde</h2>
       <label>Kies dag</label>
+
 <select id="revealDay">
-  ${DAYS.map(day => `<option value="${day}">${day}</option>`).join("")}
+  ${getDays().map(day => `<option value="${day}">${day}</option>`).join("")}
 </select>
 
 <p class="small">
@@ -1423,7 +1426,8 @@ async function showAdminScoreboard(){
 
 async function renderDayResults(targetId){
   let html = "";
-  for(const d of DAYS){
+  for(const d of getDays()){
+
     const day = await getDay(d);
     if(!day.closed || !day.molId){
       html += `<div class="qlist-item"><strong>Dag ${d}</strong> <span class="small">— nog niet afgerond</span></div>`;
