@@ -643,6 +643,13 @@ async function checkPin(){
   const v = document.getElementById("pinInput").value;
   const enteredHash = await sha256Hex(v);
   const storedHash = await sGet("admin/pinHash");
+console.log("Opgeslagen hash:", storedHash);
+
+const enteredHash = await sha256Hex(pin);
+console.log("Ingevoerde hash:", enteredHash);
+
+console.log("Gelijk?", storedHash === enteredHash);
+
   if(storedHash && enteredHash === storedHash){
     isAdmin = true;
     showAdminHome();
