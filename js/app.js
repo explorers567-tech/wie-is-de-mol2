@@ -386,94 +386,79 @@ async function getBeadsTotals(){
 // over de geheime dag-Mol. De opties zijn de daadwerkelijke antwoorden van ALLE spelers voor
 // die categorie, waarbij identieke antwoorden (ongeacht hoofdletters/spaties) worden
 // samengevoegd tot 1 optie — er wordt dus nooit een naam getoond, alleen de waarde zelf.
-async function buildMolQuestions(day, players){
-  if(!day.molId) return [];
+async function buildMolQuestions(day, players) {
 
-  const profiles = {};
-  for(const p of players){
-    profiles[p.id] = await getProfile(p.id);
-  }
+    if (!day.molId) return [];
 
-  const molProfile = profiles[day.molId];
-  if(!molProfile) return [];
+    const profiles = {};
 
-  // Alle categorieën waar de Mol iets heeft ingevuld
-  const available = FIXED_QUESTIONS.filter(f=>{
-    return (molProfile[f.key] || "").trim() !== "";
-  });
-
-  // Maximaal 12 willekeurige categorieën
-// Aantal Mol-vragen dat voor deze dag is ingesteld
-const amount = day.numMolQuestions || 12;
-
-const selected = [...available]
-    .sort(() => Math.random() - 0.5)
-    .slice(0, amount);
-
-  const questions = [];
-
-  for(const fq of selected){
-
-    const key = fq.key;
-    const molAnswer = (molProfile[key] || "").trim();
-
-    const uniqueAnswers = [];
-    const seen = new Set();
-
-    for(const p of players){
-
-      const profile = profiles[p.id];
-      if(!profile) continue;
-
-      const value = (profile[key] || "").trim();
-      if(!value) continue;
-
-      const lower = value.toLowerCase();
-
-      if(seen.has(lower)) continue;
-
-      seen.add(lower);
-      uniqueAnswers.push(value);
+    for (const p of players) {
+        profiles[p.id] = await getProfile(p.id);
     }
 
-    if(uniqueAnswers.length < 2) continue;
+    const molProfile = profiles[day.molId];
+    if (!molProfile) return [];
 
-    const others = uniqueAnswers.filter(
-      v=>v.toLowerCase()!=molAnswer.toLowerCase()
-    );
+    const allQuestions = [];
 
-    if(others.length===0) continue;
+    for (const fq of FIXED_QUESTIONS) {
 
-    const distractors =
-      [...others]
-      .sort(()=>Math.random()-0.5)
-      .slice(0,3);
+        const molAnswer = (molProfile[fq.key] || "").trim();
 
-    const options = [
-      molAnswer,
-      ...distractors
-    ];
+        if (!molAnswer) continue;
 
-    // Willekeurig schudden
-    options.sort(()=>Math.random()-0.5);
+        const uniqueAnswers = [];
+        const seen = new Set();
 
-    const correctIndex =
-      options.findIndex(
-        o=>o.toLowerCase()==molAnswer.toLowerCase()
-      );
+        for (const p of players) {
 
-    questions.push({
-      text:fq.molQ,
-      options,
-      correctIndex,
-      category:key,
-      isMolQuestion:true
-    });
+            const value = (profiles[p.id][fq.key] || "").trim();
 
-  }
+            if (!value) continue;
 
-  return questions;
+            const lower = value.toLowerCase();
+
+            if (seen.has(lower)) continue;
+
+            seen.add(lower);
+            uniqueAnswers.push(value);
+        }
+
+        if (uniqueAnswers.length < 2) continue;
+
+        const wrongAnswers = uniqueAnswers
+            .filter(v => v.toLowerCase() !== molAnswer.toLowerCase());
+
+        if (wrongAnswers.length === 0) continue;
+
+        const options = [
+            molAnswer,
+            ...wrongAnswers
+                .sort(() => Math.random() - 0.5)
+                .slice(0, 3)
+        ];
+
+        options.sort(() => Math.random() - 0.5);
+
+        allQuestions.push({
+            text: fq.molQ,
+            options,
+            correctIndex: options.findIndex(
+                o => o.toLowerCase() === molAnswer.toLowerCase()
+            ),
+            category: fq.key,
+            isMolQuestion: true
+        });
+    }
+
+    // Kies willekeurig het gewenste aantal vragen
+    const aantal = day.numMolQuestions || 8;
+
+    return allQuestions
+        .sort(() => Math.random() - 0.5)
+        .slice(0, aantal);
 }
+
 async function startQuiz(dayNum){
   render(`<div class="loading">Test laden...</div>`);
   try{
@@ -1508,7 +1493,7 @@ async function saveDayQuestions(d){
   }
   day.dayQuestions = qs;
   await setDay(d, day);
-  alert("Dagvragen opgeslagen ("+qs.length+" van 8 ingevuld).");
+  alert("Dagvragen opgeslagen ("+qs.length+" van 12 ingevuld).");
 }
 
 // ---------- ADMIN SCOREBORD ----------
