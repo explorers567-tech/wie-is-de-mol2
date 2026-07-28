@@ -872,19 +872,20 @@ async function confirmSeedTestData(){
   }
 
 function showSecuritySettings(){
-    app.innerHTML = `
-        <h2>Beveiliging</h2>
-
-        <input id="oldPin" type="password" placeholder="Huidige PIN">
-
-        <input id="newPin1" type="password" placeholder="Nieuwe PIN">
-
-        <input id="newPin2" type="password" placeholder="Herhaal nieuwe PIN">
-
-        <button onclick="changeAdminPin()">PIN wijzigen</button>
-
-        <button onclick="showAdminHome()">Terug</button>
-    `;
+  render(`
+    ${topbar("Beveiliging", "showAdminHome")}
+    <div class="card">
+      <h2>🔒 PIN wijzigen</h2>
+      <label>Huidige PIN</label>
+      <input id="oldPin" type="password" placeholder="Huidige PIN">
+      <label>Nieuwe PIN</label>
+      <input id="newPin1" type="password" placeholder="Nieuwe PIN">
+      <label>Herhaal nieuwe PIN</label>
+      <input id="newPin2" type="password" placeholder="Herhaal nieuwe PIN">
+      <button class="full" style="margin-top:14px" onclick="changeAdminPin()">PIN wijzigen</button>
+      <button class="secondary full" onclick="showAdminHome()">Terug</button>
+    </div>
+  `);
 }
 
 
