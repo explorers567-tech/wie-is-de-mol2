@@ -182,6 +182,7 @@ async function showPlayerLogin(){
   }, 50);
 }
 
+// ---------- PLAYER LOGIN MET WACHTWOORD ----------
 async function confirmPlayer(){
   const input = document.getElementById("playerNameInput").value.trim();
   if(!input){
@@ -191,48 +192,85 @@ async function confirmPlayer(){
   }
   render(`<div class="loading">Naam controleren...</div>`);
   const players = await getPlayers();
-  // Hoofdletterongevoelige vergelijking zodat "menno" en "Menno" beide werken
   const found = players.find(p => p.name.trim().toLowerCase() === input.toLowerCase());
   if(found){
-    me = found;
-    const profile = await getProfile(me.id);
-    if(!profile || !profile.completed){
-      showProfileIntake(profile || {});
+    if(found.passHash){
+      showPlayerPasswordEntry(found);
     } else {
-      showPlayerHome();
+      // Bestaande speler zonder wachtwoord (bijv. van vóór deze functie): alsnog laten instellen
+      showSetPlayerPassword(found.name, found.id);
     }
     return;
   }
-  // Naam nog niet bekend: vraag om bevestiging en meld de speler dan zelf aan.
   render(`
     <div class="card">
       <h2>Nieuw hier?</h2>
       <p>We kennen de voor en achter naam <strong>${esc(input)}</strong> nog niet. Klopt de spelling? Dan word je hiermee aangemeld als nieuwe Viking-Wie-Is-De-Mol-strijder.</p>
       <div class="row">
-        <button onclick="createAndLoginPlayer('${esc(input).replace(/'/g,"\\'")}')">✓ Ja, dit ben ik — meld mij aan</button>
+        <button onclick="showSetPlayerPassword('${esc(input).replace(/'/g,"\\'")}', null)">✓ Ja, dit ben ik — meld mij aan</button>
         <button class="secondary" onclick="showPlayerLogin()">Nee, ik typ het opnieuw</button>
       </div>
     </div>
   `);
 }
 
-async function createAndLoginPlayer(name){
-  render(`<div class="loading">Je wordt aangemeld...</div>`);
+function showSetPlayerPassword(name, existingId){
+  render(`
+    <div class="card">
+      <h2>Wachtwoord instellen</h2>
+      <p>Kies een wachtwoord voor <strong>${esc(name)}</strong>. Hiermee voorkom je dat andere spelers onder jouw naam de test doen. Onthoud het goed — vraag de begeleiding als je hem vergeet!</p>
+      <label>Nieuw wachtwoord</label>
+      <input type="password" id="newPlayerPass1" placeholder="Minimaal 4 tekens" autocomplete="new-password">
+      <label>Herhaal wachtwoord</label>
+      <input type="password" id="newPlayerPass2" placeholder="Herhaal wachtwoord" autocomplete="new-password">
+      <div id="playerPassError" style="color:var(--red);font-size:13px;margin-top:6px;display:none;"></div>
+      <button class="full" style="margin-top:14px" onclick='savePlayerPassword(${JSON.stringify(name)}, ${JSON.stringify(existingId)})'>Wachtwoord opslaan en verder</button>
+      <button class="secondary full" onclick="showPlayerLogin()">Annuleer</button>
+    </div>
+  `);
+}
+
+async function savePlayerPassword(name, existingId){
+  const p1 = document.getElementById("newPlayerPass1").value;
+  const p2 = document.getElementById("newPlayerPass2").value;
+  const errEl = document.getElementById("playerPassError");
+  if(p1.length < 4){
+    errEl.textContent = "Gebruik minimaal 4 tekens.";
+    errEl.style.display = "block";
+    return;
+  }
+  if(p1 !== p2){
+    errEl.textContent = "Wachtwoorden komen niet overeen.";
+    errEl.style.display = "block";
+    return;
+  }
+  render(`<div class="loading">Wachtwoord opslaan...</div>`);
+  const passHash = await sha256Hex(p1);
   const players = await getPlayers();
-  // Dubbele check (voor het geval iemand tegelijk inlogt)
-  const existing = players.find(p => p.name.trim().toLowerCase() === name.toLowerCase());
-  if(existing){
-    me = existing;
+
+  if(existingId){
+    const idx = players.findIndex(p=>p.id===existingId);
+    if(idx===-1){ showPlayerLogin(); return; }
+    players[idx].passHash = passHash;
+    me = players[idx];
   } else {
-    const newPlayer = {id: uid(), name};
-    players.push(newPlayer);
-    const ok = await sSet("players", players);
-    if(!ok){
-      render(`<div class="card center"><p style="color:var(--red)">Aanmelden is helaas mislukt. Controleer de internetverbinding en probeer opnieuw.</p><button onclick="showPlayerLogin()">Terug</button></div>`);
+    // Dubbele check voor het geval iemand tegelijk hetzelfde account aanmaakt
+    const existing = players.find(p => p.name.trim().toLowerCase() === name.toLowerCase());
+    if(existing && existing.passHash){
+      showPlayerPasswordEntry(existing);
       return;
     }
+    const newPlayer = {id: uid(), name, passHash};
+    players.push(newPlayer);
     me = newPlayer;
   }
+
+  const ok = await sSet("players", players);
+  if(!ok){
+    render(`<div class="card center"><p style="color:var(--red)">Opslaan is helaas mislukt. Controleer de internetverbinding en probeer opnieuw.</p><button onclick="showPlayerLogin()">Terug</button></div>`);
+    return;
+  }
+
   const profile = await getProfile(me.id);
   if(!profile || !profile.completed){
     showProfileIntake(profile || {});
@@ -240,6 +278,82 @@ async function createAndLoginPlayer(name){
     showPlayerHome();
   }
 }
+
+function showPlayerPasswordEntry(player){
+  render(`
+    <div class="card">
+      <h2>Welkom terug, ${esc(player.name)}!</h2>
+      <p>Voer je wachtwoord in om verder te gaan.</p>
+      <input type="password" id="playerPassInput" placeholder="Wachtwoord" autocomplete="current-password">
+      <div id="playerLoginError" style="color:var(--red);font-size:13px;margin-top:6px;display:none;"></div>
+      <button class="full" style="margin-top:14px" onclick='checkPlayerPassword(${JSON.stringify(player.id)})'>Inloggen</button>
+      <button class="secondary full" onclick="showPlayerLogin()">&larr; Terug</button>
+    </div>
+  `);
+  setTimeout(()=>{
+    const inp = document.getElementById("playerPassInput");
+    if(inp){ inp.focus(); inp.addEventListener("keydown", e=>{ if(e.key==="Enter") checkPlayerPassword(player.id); }); }
+  }, 50);
+}
+
+async function checkPlayerPassword(playerId){
+  const v = document.getElementById("playerPassInput").value;
+  const players = await getPlayers();
+  const player = players.find(p=>p.id===playerId);
+  if(!player){ showPlayerLogin(); return; }
+  const enteredHash = await sha256Hex(v);
+  if(enteredHash === player.passHash){
+    me = player;
+    const profile = await getProfile(me.id);
+    if(!profile || !profile.completed){
+      showProfileIntake(profile || {});
+    } else {
+      showPlayerHome();
+    }
+  } else {
+    const errEl = document.getElementById("playerLoginError");
+    errEl.textContent = "Onjuist wachtwoord.";
+    errEl.style.display = "block";
+  }
+}
+
+//   // Naam nog niet bekend: vraag om bevestiging en meld de speler dan zelf aan.
+//   render(`
+//     <div class="card">
+//       <h2>Nieuw hier?</h2>
+//       <p>We kennen de voor en achter naam <strong>${esc(input)}</strong> nog niet. Klopt de spelling? Dan word je hiermee aangemeld als nieuwe Viking-Wie-Is-De-Mol-strijder.</p>
+//       <div class="row">
+//         <button onclick="createAndLoginPlayer('${esc(input).replace(/'/g,"\\'")}')">✓ Ja, dit ben ik — meld mij aan</button>
+//         <button class="secondary" onclick="showPlayerLogin()">Nee, ik typ het opnieuw</button>
+//       </div>
+//     </div>
+//   `);
+// }
+
+// async function createAndLoginPlayer(name){
+//   render(`<div class="loading">Je wordt aangemeld...</div>`);
+//   const players = await getPlayers();
+//   // Dubbele check (voor het geval iemand tegelijk inlogt)
+//   const existing = players.find(p => p.name.trim().toLowerCase() === name.toLowerCase());
+//   if(existing){
+//     me = existing;
+//   } else {
+//     const newPlayer = {id: uid(), name};
+//     players.push(newPlayer);
+//     const ok = await sSet("players", players);
+//     if(!ok){
+//       render(`<div class="card center"><p style="color:var(--red)">Aanmelden is helaas mislukt. Controleer de internetverbinding en probeer opnieuw.</p><button onclick="showPlayerLogin()">Terug</button></div>`);
+//       return;
+//     }
+//     me = newPlayer;
+//   }
+//   const profile = await getProfile(me.id);
+//   if(!profile || !profile.completed){
+//     showProfileIntake(profile || {});
+//   } else {
+//     showPlayerHome();
+//   }
+// }
 
 // ---------- MOLLICITATIE BIJ EERSTE LOGIN ----------
 function showProfileIntake(existingProfile){
@@ -1133,11 +1247,16 @@ async function showManagePlayers(){
     const status = profile.completed
       ? `<span class="pill pill-green">mollicitatie ingevuld ✓</span>`
       : `<span class="small" style="color:var(--red)">nog niet ingevuld</span>`;
-    rows += `
-      <div class="qlist-item flex-between">
-        <div><strong>${esc(p.name)}</strong><br>${status}</div>
-        <button class="danger" onclick="removePlayer('${p.id}')">Verwijder</button>
-      </div>`;
+rows += `
+  <div class="qlist-item flex-between">
+    <div><strong>${esc(p.name)}</strong><br>${status}<br>
+      <span class="small">${p.passHash ? "wachtwoord ingesteld 🔒" : "nog geen wachtwoord"}</span>
+    </div>
+    <div class="row">
+      <button class="secondary" onclick="resetPlayerPassword('${p.id}')">Reset wachtwoord</button>
+      <button class="danger" onclick="removePlayer('${p.id}')">Verwijder</button>
+    </div>
+  </div>`;
   }
   rows = rows || "<p class='small'>Nog geen spelers toegevoegd.</p>";
   render(`
@@ -1170,7 +1289,16 @@ async function removePlayer(id){
   await sSet("players", players);
   showManagePlayers();
 }
-
+async function resetPlayerPassword(id){
+  if(!confirm("Wachtwoord van deze speler resetten? Diegene kan dan bij de volgende login een nieuw wachtwoord instellen.")) return;
+  const players = await getPlayers();
+  const idx = players.findIndex(p=>p.id===id);
+  if(idx===-1) return;
+  delete players[idx].passHash;
+  const ok = await sSet("players", players);
+  if(!ok){ alert("Resetten is mislukt."); return; }
+  showManagePlayers();
+}
 // ---------- MOLLICITATIE PROFIELEN (ADMIN) ----------
 async function showManageProfiles(){
   render(`<div class="loading">Laden...</div>`);
