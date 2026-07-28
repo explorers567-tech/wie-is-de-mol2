@@ -887,7 +887,6 @@ async function confirmSeedTestData(){
       };
     });
   }
-}
 
   // 5) Elke dag opbouwen: eigen Mol, eigen dagvragen, eigen Mol-vragen, én gesimuleerde
   //    resultaten van alle 15 spelers
