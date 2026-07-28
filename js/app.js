@@ -162,26 +162,6 @@ async function showStart(){
   `);
 }
 
-// ---------- PLAYER LOGIN ----------
-async function showPlayerLogin(){
-  render(`
-    <div class="card">
-      <h2>Wie ben jij?</h2>
-      <p>Typ hier gewoon jouw eigen voor en achter naam in. Is dit de eerste keer dat je meedoet? Dan word je automatisch aangemeld!</p>
-      <label>Jouw voor en achter naam</label>
-      <input type="text" id="playerNameInput" placeholder="Voer je voor en achter naam in..." autocomplete="off">
-      <div id="loginError" style="color:var(--red);font-size:13px;margin-top:6px;display:none;"></div>
-      <button class="full" style="margin-top:14px" onclick="confirmPlayer()">Verder</button>
-      <button class="secondary full" onclick="showStart()">&larr; Terug</button>
-    </div>
-  `);
-  // Enter-toets werkt ook
-  setTimeout(()=>{
-    const inp = document.getElementById("playerNameInput");
-    if(inp) inp.addEventListener("keydown", e=>{ if(e.key==="Enter") confirmPlayer(); });
-  }, 50);
-}
-
 // ---------- PLAYER LOGIN MET WACHTWOORD ----------
 async function confirmPlayer(){
   const input = document.getElementById("playerNameInput").value.trim();
@@ -316,44 +296,6 @@ async function checkPlayerPassword(playerId){
     errEl.style.display = "block";
   }
 }
-
-//   // Naam nog niet bekend: vraag om bevestiging en meld de speler dan zelf aan.
-//   render(`
-//     <div class="card">
-//       <h2>Nieuw hier?</h2>
-//       <p>We kennen de voor en achter naam <strong>${esc(input)}</strong> nog niet. Klopt de spelling? Dan word je hiermee aangemeld als nieuwe Viking-Wie-Is-De-Mol-strijder.</p>
-//       <div class="row">
-//         <button onclick="createAndLoginPlayer('${esc(input).replace(/'/g,"\\'")}')">✓ Ja, dit ben ik — meld mij aan</button>
-//         <button class="secondary" onclick="showPlayerLogin()">Nee, ik typ het opnieuw</button>
-//       </div>
-//     </div>
-//   `);
-// }
-
-// async function createAndLoginPlayer(name){
-//   render(`<div class="loading">Je wordt aangemeld...</div>`);
-//   const players = await getPlayers();
-//   // Dubbele check (voor het geval iemand tegelijk inlogt)
-//   const existing = players.find(p => p.name.trim().toLowerCase() === name.toLowerCase());
-//   if(existing){
-//     me = existing;
-//   } else {
-//     const newPlayer = {id: uid(), name};
-//     players.push(newPlayer);
-//     const ok = await sSet("players", players);
-//     if(!ok){
-//       render(`<div class="card center"><p style="color:var(--red)">Aanmelden is helaas mislukt. Controleer de internetverbinding en probeer opnieuw.</p><button onclick="showPlayerLogin()">Terug</button></div>`);
-//       return;
-//     }
-//     me = newPlayer;
-//   }
-//   const profile = await getProfile(me.id);
-//   if(!profile || !profile.completed){
-//     showProfileIntake(profile || {});
-//   } else {
-//     showPlayerHome();
-//   }
-// }
 
 // ---------- MOLLICITATIE BIJ EERSTE LOGIN ----------
 function showProfileIntake(existingProfile){
@@ -719,26 +661,6 @@ async function computeDayResults(d){
   if(scores.length===0) return null;
   scores.sort((a,b)=>b.score-a.score||a.time-b.time);
   return {winner: scores[0], loser: scores[scores.length-1], all: scores};
-}
-
-async function renderScoreboard(targetId, showDayResults){
-  const el = document.getElementById(targetId);
-  if(!el) return;
-  const ranking = await computeScoreboard();
-  const rows = ranking.map((r,i)=>`
-    <tr class="${i===0?'rank-1':i===ranking.length-1?'rank-last':''}">
-      <td>${i===0?'🥇':i===ranking.length-1?'💀':i+1}</td>
-      <td>${esc(r.name)}</td>
-      <td>${r.points}</td>
-      <td class="small">${(r.time/1000).toFixed(1)}s</td>
-    </tr>`).join("");
-  let html = `
-    <table>
-      <tr><th>#</th><th>Speler</th><th>Punten</th><th>Tijd</th></tr>
-      ${rows}
-    </table>
-  `;
-  el.innerHTML = html;
 }
 
 // ---------- ADMIN ----------
