@@ -107,6 +107,10 @@ async function saveProfile(playerId, data){ return await sSet("profiles/"+player
 // ---------- MOLLICITATIE VRAGEN ----------
 const FIXED_QUESTIONS = [
   {key:"eten",       label:"Wat is jouw favoriete eten",                           molQ:"Van welk voedsel houdt onze dag Mol het meest?"},
+  {key:"DameOfHeer", label:"Ben je een dame of een heer",                          molQ:"Is onze dag Mol een dame of een heer?"},
+  {key:"Leeftijd",   label:"Hoe oud ben je",                                       molQ:"Hoe oud is onze dag Mol?"},
+  {key:"Geur",       label:"Wat vind jij echt lekker ruiken",                      molQ:"Welke geur vindt onze dag Mol het lekkerst?"},
+  {key:"Stinken",    label:"Wat vind jij echt stinken",                            molQ:"Wat vindt onze dag Mol echt stinken?"},
   {key:"muziek",     label:"Wat is jouw favoriete muziek / artiest",               molQ:"Naar welke muziek luistert onze dag Mol het liefst?"},
   {key:"film",       label:"Wat is jouw favoriete film of serie",                  molQ:"Wat is de favoriete film of serie van onze dag Mol?"},
   {key:"huisdier",   label:"Welke huisdieren heb jij",                             molQ:"Welk huisdier (of huisdieren) heeft onze dag Mol?"},
@@ -924,40 +928,6 @@ async function changeAdminPin(){
     await sSet("admin/pinHash",newHash);
 
     alert("PIN gewijzigd.");
-}
-
-async function confirmResetDatabase(){
-  const input = document.getElementById("resetConfirmInput").value.trim();
-  if(input !== "RESET"){
-    alert('Typ precies "RESET" (hoofdletters) om te bevestigen.');
-    return;
-  }
-  render(`<div class="loading">Database wordt volledig geleegd...</div>`);
-  // Elke hoofdtak in de database expliciet naar null zetten, zodat er
-  // niets van spelers, antwoorden, dagen, profielen of de vragenbank achterblijft.
-  const branches = ["players", "bank", "days", "answers", "profiles"];
-  let allOk = true;
-  for(const branch of branches){
-    const ok = await sSet(branch, null);
-    if(!ok) allOk = false;
-  }
-  if(!allOk){
-    render(`
-      ${topbar("Database resetten", "showAdminHome")}
-      <div class="card" style="border-color:var(--red);">
-        <p style="color:#e08a72;">Er ging iets mis bij het resetten. Controleer de internetverbinding en de Firebase-regels, en probeer het opnieuw.</p>
-        <button class="full" onclick="showResetDatabase()">Opnieuw proberen</button>
-      </div>
-    `);
-    return;
-  }
-  render(`
-    <div class="card center">
-      <h2>✅ Database is leeg</h2>
-      <p>Alle spelers, antwoorden, dagen en vragen zijn verwijderd. Je kunt nu fris beginnen met een nieuwe groep.</p>
-      <button class="full" onclick="showAdminHome()">Terug naar beheer</button>
-    </div>
-  `);
 }
 
 // ---------- ROOD / GROEN ONTHULSCHERM ----------
