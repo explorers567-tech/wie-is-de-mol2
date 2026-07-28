@@ -86,7 +86,7 @@ async function getBank(){
 // het laden van de test dan vast zonder foutmelding.
 async function getDay(n){
   const d = await sGet("days/day_"+n);
-  if(!d) return {questionIds:[], dayQuestions:[], molId:null, open:false, votingOpen:false, closed:false, molCategories:[]};
+  if(!d) return {questionIds:[], dayQuestions:[], molId:null, open:false, votingOpen:false, closed:false, numMolQuestions: 12, numBankQuestions: 0, molCategories:[]};
   return {
     ...d,
     questionIds: toArr(d.questionIds),
@@ -403,9 +403,12 @@ async function buildMolQuestions(day, players){
   });
 
   // Maximaal 12 willekeurige categorieën
-  const selected = [...available]
-    .sort(()=>Math.random()-0.5)
-    .slice(0,12);
+// Aantal Mol-vragen dat voor deze dag is ingesteld
+const amount = day.numMolQuestions || 12;
+
+const selected = [...available]
+    .sort(() => Math.random() - 0.5)
+    .slice(0, amount);
 
   const questions = [];
 
@@ -824,15 +827,18 @@ async function confirmSeedTestData(){
     const molPlayer = players[(d - 1) % players.length];
     molNames.push(`Dag ${d}: ${molPlayer.name}`);
 
-    const dayObj = {
-      questionIds: [],
-      dayQuestions,
-      molCategories,
-      molId: molPlayer.id,
-      open: true,
-      votingOpen: false,
-      closed: true
-    };
+const dayObj = {
+    questionIds: [],
+    dayQuestions,
+    molId: molPlayer.id,
+
+    numMolQuestions: 12,
+    numBankQuestions: 0,
+
+    open: true,
+    votingOpen: false,
+    closed: true
+};
     await setDay(d, dayObj);
 
     const molQuestions = await buildMolQuestions(await getDay(d), players);
@@ -1477,7 +1483,7 @@ async function saveMol(d){
 async function saveMolCategories(d){
   const keys = Array.from(document.querySelectorAll(".molCatPick:checked")).map(el=>el.value);
   const day = await getDay(d);
-  // day.molCategories = keys;
+  day.molCategories = keys;
   await setDay(d, day);
   alert("Mol-vragen voor dag "+d+" opgeslagen ("+keys.length+" onderwerpen).");
 }
