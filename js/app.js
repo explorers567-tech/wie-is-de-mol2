@@ -1423,12 +1423,27 @@ async function showManageDay(d){
       <select id="molSelect">${playerOpts}</select>
       <button style="margin-top:8px" onclick="saveMol(${d})">Mol opslaan</button>
     </div>
+
     <div class="card">
-      <h2>🕵️ Mol-vragen voor deze dag</h2>
-      <p class="small">Kies over welke onderwerpen de spelers moeten raden. De vraag noemt <strong>nooit een naam</strong> — spelers kiezen bijvoorbeeld een haarkleur, en raden zo (zonder het met zoveel woorden te zeggen) wie zij denken dat de Mol is. Antwoorden die meerdere spelers gemeen hebben, tellen als 1 optie.</p>
-      ${molCategoryChecks}
-      <button class="full" style="margin-top:10px" onclick="saveMolCategories(${d})">Mol-vragen opslaan</button>
+    <h2>🕵️ Automatische Mol-vragen</h2>
+
+    <label>Aantal Mol-vragen</label>
+    <input
+        type="number"
+        id="numMolQuestions"
+        min="1"
+        max="${FIXED_QUESTIONS.length}"
+        value="${day.numMolQuestions || 8}">
+
+    <button class="full"
+            style="margin-top:10px"
+            onclick="previewMolQuestions(${d})">
+        🎲 Selecteer Mol-vragen
+    </button>
+
+    <div id="molPreview" style="margin-top:15px"></div>
     </div>
+
     <div class="card">
       <h2>Extra vragen uit de vragenbank (optioneel)</h2>
       <p class="small">Handmatig toegevoegde algemene vragen (bijv. over het scoutingkamp zelf) — geen namen, dat bepaal je zelf bij het invullen.</p>
@@ -1450,6 +1465,7 @@ async function setDayOpen(d, openVal){
   await setDay(d, day);
   showManageDay(d);
 }
+
 async function closeDayScoring(d){
   if(!confirm("Mol-uitslag van dag "+d+" definitief bevestigen? Doe dit pas als iedereen heeft gespeeld.")) return;
   const day = await getDay(d);
@@ -1465,6 +1481,7 @@ async function saveMol(d){
   await setDay(d, day);
   alert("Mol voor dag "+d+" opgeslagen.");
 }
+
 async function saveMolCategories(d){
   const keys = Array.from(document.querySelectorAll(".molCatPick:checked")).map(el=>el.value);
   const day = await getDay(d);
@@ -1479,6 +1496,23 @@ async function saveBankPicks(d){
   await setDay(d, day);
   document.getElementById("bankCount").textContent = ids.length;
   alert("Geselecteerd: "+ids.length+" vragen opgeslagen.");
+}
+async function previewMolQuestions(d){
+
+    const day = await getDay(d);
+
+    day.numMolQuestions =
+        parseInt(document.getElementById("numMolQuestions").value);
+
+    const players = await getPlayers();
+
+    const questions =
+        await buildMolQuestions(day, players);
+
+    document.getElementById("molPreview").innerHTML =
+        questions.map((q,i)=>
+            `<div>${i+1}. ${esc(q.text)}</div>`
+        ).join("");
 }
 async function saveDayQuestions(d){
   const day = await getDay(d);
