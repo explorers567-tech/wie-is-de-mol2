@@ -807,6 +807,23 @@ async function checkPin() {
     }
 }
 
+function showSecuritySettings(){
+  render(`
+    ${topbar("Beveiliging", "showAdminHome")}
+    <div class="card">
+      <h2>🔒 PIN wijzigen</h2>
+      <label>Huidige PIN</label>
+      <input id="oldPin" type="password" placeholder="Huidige PIN">
+      <label>Nieuwe PIN</label>
+      <input id="newPin1" type="password" placeholder="Nieuwe PIN">
+      <label>Herhaal nieuwe PIN</label>
+      <input id="newPin2" type="password" placeholder="Herhaal nieuwe PIN">
+      <button class="full" style="margin-top:14px" onclick="changeAdminPin()">PIN wijzigen</button>
+      <button class="secondary full" onclick="showAdminHome()">Terug</button>
+    </div>
+  `);
+}
+
 async function showAdminHome(){
   const beadsInfo = await getBeadsTotals();
   render(`
@@ -870,25 +887,7 @@ async function confirmSeedTestData(){
       };
     });
   }
-
-function showSecuritySettings(){
-  render(`
-    ${topbar("Beveiliging", "showAdminHome")}
-    <div class="card">
-      <h2>🔒 PIN wijzigen</h2>
-      <label>Huidige PIN</label>
-      <input id="oldPin" type="password" placeholder="Huidige PIN">
-      <label>Nieuwe PIN</label>
-      <input id="newPin1" type="password" placeholder="Nieuwe PIN">
-      <label>Herhaal nieuwe PIN</label>
-      <input id="newPin2" type="password" placeholder="Herhaal nieuwe PIN">
-      <button class="full" style="margin-top:14px" onclick="changeAdminPin()">PIN wijzigen</button>
-      <button class="secondary full" onclick="showAdminHome()">Terug</button>
-    </div>
-  `);
 }
-
-
 
   // 5) Elke dag opbouwen: eigen Mol, eigen dagvragen, eigen Mol-vragen, én gesimuleerde
   //    resultaten van alle 15 spelers
