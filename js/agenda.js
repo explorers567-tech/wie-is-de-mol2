@@ -373,7 +373,7 @@ function renderAgendaView(items){
     ${topbar("Dagplanning", "showAdminHome")}
     <div class="card">
       <h2>🗓️ Dagplanning van het kamp</h2>
-      <p class="small">Hier staat het volledige programma per dagdeel: activiteit, programmamakers, bijzonderheden, kosten en wie welke dag begeleidt of verantwoordelijk is. Wijzig gerust een veld en druk daarna op "Wijzigingen opslaan" onderaan.</p>
+      <p class="small">Hier staat het volledige programma per dagdeel: activiteit, programmamakers, bijzonderheden, kosten en wie welke dag begeleidt of verantwoordelijk is. Wijzig gerust een veld en druk daarna op "💾 Dit blok opslaan" bij dat dagdeel — dat gaat direct, je hoeft niet naar beneden te scrollen.</p>
     </div>
   `;
 
@@ -404,11 +404,24 @@ function renderAgendaView(items){
           <label>Bijzonderheden</label>
           <textarea id="ag_bijzonderheden_${it.id}" placeholder="Aandachtspunten, materialen, etc.">${esc(it.bijzonderheden)}</textarea>
           <div class="row">
-            <div style="width:100px"><label>Kosten</label><input type="text" id="ag_kosten_${it.id}" value="${esc(it.kosten)}"></div>
+            <div style="width:140px">
+              <label>Kosten (in DKK)</label>
+              <div class="row" style="align-items:center;gap:4px">
+                <input type="text" inputmode="decimal" id="ag_kosten_${it.id}" value="${esc(it.kosten)}" placeholder="bijv. 150" style="flex:1">
+                <span class="small">kr.</span>
+              </div>
+            </div>
             <div style="flex:1"><label>Begeleiding</label><input type="text" id="ag_begeleiding_${it.id}" value="${esc(it.begeleiding)}"></div>
             <div style="flex:1"><label>Dagverantwoordelijke</label><input type="text" id="ag_dagverantwoordelijke_${it.id}" value="${esc(it.dagverantwoordelijke)}"></div>
           </div>
-          <button class="danger" style="margin-top:8px" onclick="removeAgendaItem('${esc(it.id)}')">Verwijder dit blok</button>
+          <p class="small" style="margin-top:2px">Let op: kosten graag in Deense kroon (DKK) invullen, niet in euro's — het budgetoverzicht rekent dit automatisch om.</p>
+          <div class="row flex-between" style="margin-top:8px;align-items:center">
+            <div class="row" style="gap:8px">
+              <button onclick="saveAgendaItem('${esc(it.id)}')">💾 Dit blok opslaan</button>
+              <button class="danger" onclick="removeAgendaItem('${esc(it.id)}')">Verwijder dit blok</button>
+            </div>
+            <span class="small" id="ag_status_${it.id}"></span>
+          </div>
         </div>
       `;
     });
@@ -428,7 +441,8 @@ function renderAgendaView(items){
       </div>
     </div>
     <div class="card center">
-      <button class="full" onclick="saveAgendaChanges()">💾 Wijzigingen opslaan</button>
+      <p class="small">Losse blokken sla je op met de "💾 Dit blok opslaan"-knop bij dat dagdeel. Deze knop hieronder slaat alles in één keer op — handig na het toevoegen of verwijderen van blokken.</p>
+      <button class="full" onclick="saveAgendaChanges()">💾 Alles in één keer opslaan</button>
       <button class="secondary full" onclick="showResetAgenda()">↻ Terugzetten naar standaardplanning</button>
     </div>
   `;
@@ -437,25 +451,55 @@ function renderAgendaView(items){
 }
 
 // ---------- BEWERKEN ----------
+function readAgendaItemFromForm(it){
+  const get = (field)=>{
+    const el = document.getElementById(`ag_${field}_${it.id}`);
+    return el ? el.value.trim() : it[field];
+  };
+  return {
+    ...it,
+    dagdeel: get("dagdeel"),
+    datum: get("datum"),
+    activiteit: get("activiteit"),
+    maker1: get("maker1"),
+    maker2: get("maker2"),
+    bijzonderheden: get("bijzonderheden"),
+    kosten: get("kosten"),
+    begeleiding: get("begeleiding"),
+    dagverantwoordelijke: get("dagverantwoordelijke")
+  };
+}
+
+// Slaat één dagdeel-blok direct op, zonder het hele scherm opnieuw te tekenen —
+// zo blijf je gewoon op je scrollpositie staan in plaats van steeds naar boven
+// of onderaan te moeten scrollen.
+async function saveAgendaItem(id){
+  const items = window._agendaCache || [];
+  const idx = items.findIndex(it => it.id === id);
+  if(idx === -1) return;
+
+  const statusEl = document.getElementById(`ag_status_${id}`);
+  if(statusEl) statusEl.textContent = "Opslaan...";
+
+  const updated = readAgendaItemFromForm(items[idx]);
+  items[idx] = updated;
+  window._agendaCache = items;
+
+  const ok = await setAgenda(items);
+  if(statusEl){
+    statusEl.textContent = ok ? "✓ Opgeslagen" : "⚠ Opslaan mislukt";
+    statusEl.style.color = ok ? "var(--gold-light)" : "var(--red)";
+    setTimeout(()=>{ if(statusEl) statusEl.textContent = ""; }, 2500);
+  }
+  if(!ok){
+    alert("Opslaan is helaas mislukt. Controleer de internetverbinding en probeer opnieuw.");
+  }
+}
+
+// Slaat alle blokken tegelijk op (handig na het toevoegen/verwijderen van dagdelen
+// of nieuwe dagen, of als je liever in één keer alles wegschrijft).
 async function saveAgendaChanges(){
-  const items = (window._agendaCache || []).map(it=>{
-    const get = (field)=>{
-      const el = document.getElementById(`ag_${field}_${it.id}`);
-      return el ? el.value.trim() : it[field];
-    };
-    return {
-      ...it,
-      dagdeel: get("dagdeel"),
-      datum: get("datum"),
-      activiteit: get("activiteit"),
-      maker1: get("maker1"),
-      maker2: get("maker2"),
-      bijzonderheden: get("bijzonderheden"),
-      kosten: get("kosten"),
-      begeleiding: get("begeleiding"),
-      dagverantwoordelijke: get("dagverantwoordelijke")
-    };
-  });
+  const items = (window._agendaCache || []).map(it => readAgendaItemFromForm(it));
   render(`<div class="loading">Planning opslaan...</div>`);
   const ok = await setAgenda(items);
   if(!ok){
