@@ -744,6 +744,7 @@ async function showAdminHome(){
     ${topbar("Super toffe Begeleiding", "showStart")}
     <div class="card">
       <h2>Beheer</h2>
+      <button class="full" onclick="showAgenda()">🗓️ Dagplanning</button>
       <button onclick="showSecuritySettings()"> 🔒 Beveiliging </button>
       <button class="full" onclick="showDaySettings()">📆 Aantal speeldagen instellen</button>
       <button class="full" onclick="showManagePlayers()">👥 Spelers beheren</button>
