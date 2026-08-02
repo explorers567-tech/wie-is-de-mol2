@@ -745,7 +745,7 @@ async function showAdminHome(){
     <div class="card">
       <h2>Beheer</h2>
       <button class="full" onclick="showAgenda()">🗓️ Dagplanning</button>
-      <button onclick="showSecuritySettings()"> 🔒 Beveiliging </button>
+      <button class="full" onclick="showBudget()">💰 Budget</button>
       <button class="full" onclick="showDaySettings()">📆 Aantal speeldagen instellen</button>
       <button class="full" onclick="showManagePlayers()">👥 Spelers beheren</button>
       <button class="full" onclick="showManageProfiles()">📝 Mollicitatie-antwoorden bekijken</button>
@@ -753,6 +753,7 @@ async function showAdminHome(){
       <button class="full" onclick="showManageDays()">📅 Dagen instellen (Mol + vragen)</button>
       <button class="full" onclick="showAdminScoreboard()">🏆 Scorebord & uitslag</button>
       <button class="full" style="background:linear-gradient(180deg,#4a9e4a,#2d6e2d);color:#fff;border-color:#1a4d1a;" onclick="showRevealScreen()">🟢🔴 Rood/Groen onthulscherm</button>
+      <button onclick="showSecuritySettings()"> 🔒 Beveiliging </button>
     </div>
     <div class="card" style="border-color:var(--red);">
       <h2 style="border-color:var(--red);color:#e08a72;">⚠️ Gevarenzone</h2>
