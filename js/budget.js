@@ -42,16 +42,21 @@ function formatDKK(n){
 }
 
 // ---------- KOSTEN OPHALEN UIT DE DAGPLANNING (agenda.js) ----------
-// Elk dagdeel-blok uit de dagplanning heeft een "kosten"-veld (in DKK). Hier tellen we
-// die allemaal bij elkaar op, en geven we ook de uitsplitsing per dagdeel terug zodat
-// we die in het overzicht kunnen tonen.
+// Elk dagdeel-blok uit de dagplanning heeft nu 0 of meer losse kostenboekingen
+// (omschrijving + bedrag in DKK). Hier tellen we die allemaal bij elkaar op, en
+// geven we ook de uitsplitsing per dagdeel/boeking terug voor het overzicht.
 async function getCostBreakdown(){
   const items = await getAgenda();
-  const breakdown = items.map(it => ({
-    ...it,
-    kostenDkk: parseAmount(it.kosten)
-  }));
-  const totalDkk = breakdown.reduce((sum, it) => sum + it.kostenDkk, 0);
+  let totalDkk = 0;
+  const breakdown = items.map(it => {
+    const boekingen = (it.kostenBoekingen || []).map(b => {
+      const bedrag = parseAmount(b.bedrag);
+      totalDkk += bedrag;
+      return {...b, bedrag};
+    });
+    const itemTotalDkk = boekingen.reduce((s,b)=> s + b.bedrag, 0);
+    return {...it, boekingen, itemTotalDkk};
+  });
   return {breakdown, totalDkk};
 }
 
@@ -76,18 +81,19 @@ function renderBudgetView(settings, breakdown, totalDkk){
   let breakdownHtml = "";
   dates.forEach(dateKey=>{
     const dayItems = groups[dateKey];
-    const dayTotalDkk = dayItems.reduce((s,it)=>s+it.kostenDkk, 0);
-    if(dayTotalDkk === 0 && dayItems.every(it=>it.kostenDkk===0)){
-      // dag zonder kosten toch tonen, maar compact
-    }
+    const dayTotalDkk = dayItems.reduce((s,it)=>s+it.itemTotalDkk, 0);
     breakdownHtml += `<div class="qlist-item">
       <div class="flex-between"><strong>${esc(agendaDayLabel(dateKey))}</strong><span class="small">${formatDKK(dayTotalDkk)} (≈ ${formatEUR(dayTotalDkk/rate)})</span></div>`;
     dayItems.forEach(it=>{
-      if(it.kostenDkk === 0) return;
-      breakdownHtml += `<div class="small flex-between" style="padding:4px 0;border-top:1px solid rgba(255,255,255,0.08)">
-        <span>${esc(it.dagdeel)} — ${esc(it.activiteit || "(geen omschrijving)")}</span>
-        <span>${formatDKK(it.kostenDkk)}</span>
-      </div>`;
+      if(it.boekingen.length === 0) return;
+      breakdownHtml += `<div class="small" style="padding:6px 0;border-top:1px solid rgba(255,255,255,0.08)">
+        <div class="flex-between"><strong>${esc(it.dagdeel)} — ${esc(it.activiteit || "(geen omschrijving)")}</strong><span>${formatDKK(it.itemTotalDkk)}</span></div>`;
+      it.boekingen.forEach(b=>{
+        breakdownHtml += `<div class="flex-between" style="padding-left:14px;color:var(--parchment-dark)">
+          <span>${esc(b.omschrijving || "(geen omschrijving)")}</span><span>${formatDKK(b.bedrag)}</span>
+        </div>`;
+      });
+      breakdownHtml += `</div>`;
     });
     breakdownHtml += `</div>`;
   });
@@ -133,7 +139,7 @@ function renderBudgetView(settings, breakdown, totalDkk){
 
     <div class="card">
       <h2>🧾 Kosten per dag</h2>
-      <p class="small">Kosten worden per dagdeel ingevuld bij de <a href="#" onclick="showAgenda();return false;" style="color:var(--gold-light)">Dagplanning</a>. Hier zie je ze automatisch opgeteld.</p>
+      <p class="small">Kostenboekingen worden per dagdeel toegevoegd bij de <a href="#" onclick="showAgenda();return false;" style="color:var(--gold-light)">Dagplanning</a> (met omschrijving en bedrag). Hier zie je ze automatisch per boeking en per dag opgeteld.</p>
       ${breakdownHtml}
     </div>
   `);
